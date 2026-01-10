@@ -1,0 +1,12 @@
+Package: weathertools
+Title: Weather and Atmospheric Calculation Utilities
+Version: 0.0.0.9001
+Authors@R: 
+    person("Jordan", "Clark", , "jordanjclark50@gmail.com", role = c("aut", "cre"))
+Description: Utility functions for computing common weather and
+    atmospheric quantities such as humidity, vapor pressure, and
+    temperature-derived metrics.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
