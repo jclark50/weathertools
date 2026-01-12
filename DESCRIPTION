@@ -13,7 +13,7 @@ RoxygenNote: 7.3.3
 Imports: 
     Rcpp,
     RcppParallel,
-	data.table
+	data.table,
 	zoo
 LinkingTo: 
     Rcpp,
