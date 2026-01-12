@@ -11,13 +11,13 @@
 #' - Accepts temperature units `"degC"`, `"degF"`, or `"K"`. When `"K"` is used,
 #'   values are converted to `"degC"` internally for the C++ call.
 #'
-#' `relativeHumidity` may be given as **percent** (0–100) or **fraction** (0–1).
+#' `relativeHumidity` may be given as **percent** (0-100) or **fraction** (0-1).
 #' Fractions (<= 1.5) are auto-scaled to percent.
 #'
 #' @param airTemp Numeric. Air temperature. Provide `attr(airTemp, "unit")`
 #'   as `"degC"`, `"degF"`, or `"K"` unless `ignoreattr = TRUE`.
-#' @param relativeHumidity Numeric. Relative humidity; percent (0–100) or
-#'   fraction (0–1). Fractions are auto-converted to percent.
+#' @param relativeHumidity Numeric. Relative humidity; percent (0-100) or
+#'   fraction (0-1). Fractions are auto-converted to percent.
 #' @param inputunits Character. Temperature unit of `airTemp`
 #'   (`"degF"`, `"degC"`, or `"K"`). Required when `ignoreattr = TRUE`;
 #'   if provided together with an attribute, they must agree.
@@ -62,7 +62,7 @@ calcWB <- function(airTemp, relativeHumidity,
   norm_u <- function(u) {
     if (is.null(u)) return(NA_character_)
     u <- trimws(as.character(u)); if (!nzchar(u)) return(NA_character_)
-    u <- gsub("\\\\", "", u); u <- gsub("°", "", u, fixed = TRUE); u <- toupper(u)
+    u <- gsub("\\\\", "", u); u <- gsub("deg", "", u, fixed = TRUE); u <- toupper(u)
     if (u %in% c("C","DEGC","CELSIUS")) return("degC")
     if (u %in% c("F","DEGF","FAHRENHEIT")) return("degF")
     if (u %in% c("K","KELVIN")) return("K")

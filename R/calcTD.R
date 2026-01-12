@@ -18,7 +18,7 @@
 #' }
 #'
 #' @param airTemp Numeric vector of air temperature. May carry \code{attr(., "unit")}.
-#' @param relativeHumidity Numeric vector of RH in percent (0–100).
+#' @param relativeHumidity Numeric vector of RH in percent (0-100).
 #' @param inputunits Character; temperature units of \code{airTemp}. One of
 #'   \code{"degC"}, \code{"degF"}, \code{"K"}. Defaults to \code{"degC"}.
 #' @param outputunits Character; desired dew point units. One of
@@ -68,7 +68,7 @@ calcTD <- function(airTemp, relativeHumidity,
   norm_u <- function(u) {
     if (is.null(u)) return(NA_character_)
     u <- trimws(as.character(u)); if (!nzchar(u)) return(NA_character_)
-    u <- gsub("\\\\","",u); u <- gsub("°","",u, fixed=TRUE); u <- toupper(u)
+    u <- gsub("\\\\","",u); u <- gsub("deg","",u, fixed=TRUE); u <- toupper(u)
     if (u %in% c("C","DEGC","CELSIUS")) return("degC")
     if (u %in% c("F","DEGF","FAHRENHEIT")) return("degF")
     if (u %in% c("K","KELVIN")) return("K")

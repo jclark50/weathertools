@@ -24,7 +24,7 @@
 #' @param ignoreattr Logical; if \code{TRUE}, relax attribute checks and trust \code{inputunits}.
 #' @param debug Logical; if \code{TRUE}, emit a brief trace of unit decisions.
 #'
-#' @return Numeric vector of relative humidity in percent (0–100). No unit attribute is attached.
+#' @return Numeric vector of relative humidity in percent (0-100). No unit attribute is attached.
 #'
 #' @details
 #' Internally, temperatures are normalized to \code{"degC"} or \code{"degF"} depending on
@@ -61,7 +61,7 @@ calcRH <- function(airTemp, dewPoint = NULL,
   norm_u <- function(u) {
     if (is.null(u)) return(NA_character_)
     u <- trimws(as.character(u)); if (!nzchar(u)) return(NA_character_)
-    u <- gsub("\\\\","",u); u <- gsub("°","",u, fixed=TRUE); u <- toupper(u)
+    u <- gsub("\\\\","",u); u <- gsub("deg","",u, fixed=TRUE); u <- toupper(u)
     if (u %in% c("C","DEGC","CELSIUS")) return("degC")
     if (u %in% c("F","DEGF","FAHRENHEIT")) return("degF")
     if (u %in% c("K","KELVIN")) return("K")
@@ -78,7 +78,7 @@ calcRH <- function(airTemp, dewPoint = NULL,
   }
   attr_u <- function(x) { u <- attr(x, "unit", exact=TRUE); if (is.null(u)) NA_character_ else norm_u(u) }
 
-  # normalize requested working unit; for K we’ll work in degC
+  # normalize requested working unit; for K we'll work in degC
   u_req  <- norm_u(inputunits); if (is.na(u_req)) stop("inputunits must be one of: 'degC','C','degF','F','K'")
   u_work <- if (u_req == "K") "degC" else u_req
 

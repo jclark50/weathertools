@@ -15,7 +15,7 @@
 #' }
 #'
 #' @param airTemp Numeric vector of air temperature. May carry \code{attr(., "unit")}.
-#' @param relativeHumidity Numeric vector of RH in percent (0–100).
+#' @param relativeHumidity Numeric vector of RH in percent (0-100).
 #' @param inputunits Character or \code{NULL}; one of \code{"degC"}, \code{"degF"}, \code{"K"}.
 #'   Only needed if \code{ignoreattr = TRUE} and no attribute is present.
 #' @param outputunits Character; \code{"degF"} (default) or \code{"degC"} for the returned HI.
@@ -64,7 +64,7 @@ calcHI <- function(airTemp, relativeHumidity,
     if (is.null(u)) return(NA_character_)
     u <- trimws(as.character(u))
     if (!nzchar(u)) return(NA_character_)
-    u <- gsub("\\\\","",u); u <- gsub("°","",u,fixed=TRUE); u <- toupper(u)
+    u <- gsub("\\\\","",u); u <- gsub("deg","",u,fixed=TRUE); u <- toupper(u)
     if (u %in% c("C","DEGC","CELSIUS")) return("degC")
     if (u %in% c("F","DEGF","FAHRENHEIT")) return("degF")
     if (u %in% c("K","KELVIN")) return("K")
