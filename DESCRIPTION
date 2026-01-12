@@ -1,6 +1,6 @@
 Package: weathertools
 Title: Weather and Atmospheric Calculation Utilities
-Version: 0.0.0.9001
+Version: 0.1.0
 Authors@R: 
     person("Jordan", "Clark", , "jordanjclark50@gmail.com", role = c("aut", "cre"))
 Description: Utility functions for computing common weather and
