@@ -14,6 +14,7 @@ Imports:
     Rcpp,
     RcppParallel,
 	data.table
+	zoo
 LinkingTo: 
     Rcpp,
     RcppParallel
