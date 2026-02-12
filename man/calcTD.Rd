@@ -18,7 +18,7 @@ calcTD(
 \arguments{
 \item{airTemp}{Numeric vector of air temperature. May carry \code{attr(., "unit")}.}
 
-\item{relativeHumidity}{Numeric vector of RH in percent (0–100).}
+\item{relativeHumidity}{Numeric vector of RH in percent (0-100).}
 
 \item{inputunits}{Character; temperature units of \code{airTemp}. One of
 \code{"degC"}, \code{"degF"}, \code{"K"}. Defaults to \code{"degC"}.}

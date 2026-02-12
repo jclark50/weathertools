@@ -19,8 +19,8 @@ calcWB(
 \item{airTemp}{Numeric. Air temperature. Provide \code{attr(airTemp, "unit")}
 as \code{"degC"}, \code{"degF"}, or \code{"K"} unless \code{ignoreattr = TRUE}.}
 
-\item{relativeHumidity}{Numeric. Relative humidity; percent (0–100) or
-fraction (0–1). Fractions are auto-converted to percent.}
+\item{relativeHumidity}{Numeric. Relative humidity; percent (0-100) or
+fraction (0-1). Fractions are auto-converted to percent.}
 
 \item{inputunits}{Character. Temperature unit of \code{airTemp}
 (\code{"degF"}, \code{"degC"}, or \code{"K"}). Required when \code{ignoreattr = TRUE};
@@ -59,7 +59,7 @@ to skip attribute checks and rely solely on \code{inputunits}.
 values are converted to \code{"degC"} internally for the C++ call.
 }
 
-\code{relativeHumidity} may be given as \strong{percent} (0–100) or \strong{fraction} (0–1).
+\code{relativeHumidity} may be given as \strong{percent} (0-100) or \strong{fraction} (0-1).
 Fractions (<= 1.5) are auto-scaled to percent.
 }
 \examples{

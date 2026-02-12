@@ -30,7 +30,7 @@ Defaults to \code{"degC"}.}
 \item{debug}{Logical; if \code{TRUE}, emit a brief trace of unit decisions.}
 }
 \value{
-Numeric vector of relative humidity in percent (0–100). No unit attribute is attached.
+Numeric vector of relative humidity in percent (0-100). No unit attribute is attached.
 }
 \description{
 Computes RH (\%) given air temperature and dew point, or alternatively

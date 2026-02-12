@@ -18,7 +18,7 @@ calcHI(
 \arguments{
 \item{airTemp}{Numeric vector of air temperature. May carry \code{attr(., "unit")}.}
 
-\item{relativeHumidity}{Numeric vector of RH in percent (0–100).}
+\item{relativeHumidity}{Numeric vector of RH in percent (0-100).}
 
 \item{inputunits}{Character or \code{NULL}; one of \code{"degC"}, \code{"degF"}, \code{"K"}.
 Only needed if \code{ignoreattr = TRUE} and no attribute is present.}
