@@ -2,7 +2,7 @@
 % Please edit documentation in R/stationpressure.R
 \name{stationpressure}
 \alias{stationpressure}
-\title{stationpressure}
+\title{Estimate station pressure from sea-level pressure and elevation}
 \usage{
 stationpressure(
   pressureMB,
@@ -12,6 +12,20 @@ stationpressure(
   elevUnits = "m"
 )
 }
+\arguments{
+\item{pressureMB}{Numeric vector of pressure (typically sea-level) in millibars/hPa.}
+
+\item{airTemp}{Numeric vector of air temperature.}
+
+\item{elevation}{Numeric vector of station elevation.}
+
+\item{airTempUnits}{Character temperature units for \code{airTemp} (e.g. \code{"degC"} or \code{"degF"}).}
+
+\item{elevUnits}{Character elevation units for \code{elevation} (e.g. \code{"m"} or \code{"feet"}).}
+}
+\value{
+Numeric vector of estimated station pressure (typically in millibars/hPa).
+}
 \description{
-stationpressure
+Estimate station pressure from sea-level pressure and elevation
 }

@@ -2,10 +2,16 @@
 % Please edit documentation in R/intomb.R
 \name{intomb}
 \alias{intomb}
-\title{intomb}
+\title{Inches of mercury to millibars}
 \usage{
 intomb(presin)
 }
+\arguments{
+\item{presin}{Numeric vector of pressure in inches of mercury (inHg).}
+}
+\value{
+Numeric vector of pressure in millibars (hPa).
+}
 \description{
-intomb
+Inches of mercury to millibars
 }

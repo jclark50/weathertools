@@ -2,19 +2,18 @@
 % Please edit documentation in R/tzone.R
 \name{tzone}
 \alias{tzone}
+\alias{tzone<-}
 \title{Lightweight time zone getter/setter for POSIXt}
 \usage{
 tzone(x)
+
+tzone(x) <- value
 }
 \arguments{
 \item{x}{A \code{POSIXct} or \code{POSIXlt} vector.}
 
-\item{value}{Character scalar time zone. Accepted forms:
-\itemize{
-\item \code{"America/New_York"} — relabel only
-\item \code{"America/New_York|force"} — force reinterpretation
-\item \code{"America/New_York; mode=force"} — same as above
-}}
+\item{value}{Character scalar time zone in IANA/Olson form (see \code{OlsonNames()}),
+optionally annotated with \code{"|force"} or \code{"; mode=force"}.}
 }
 \value{
 \code{tzone(x)} returns the current tag (character) or \code{""}.
@@ -24,4 +23,33 @@ The replacement form returns the modified vector.
 Convenience helpers to read or set the \code{"tzone"} attribute on POSIX date-times.
 Use \code{"Area/Location"} to relabel (same instant), or append \code{"|force"}
 to re-interpret clock times as local in the new zone (epoch seconds change).
+}
+\details{
+\itemize{
+\item \code{tzone(x)} returns the current time zone tag (character) or \code{""}.
+\item \code{tzone(x) <- value} sets the time zone. By default it relabels only.
+If \code{value} indicates \code{"force"}, the same printed wall time is re-parsed
+in the new zone (epoch seconds change).
+}
+
+Accepted \code{value} forms:
+\itemize{
+\item \code{"America/New_York"} — relabel only
+\item \code{"America/New_York|force"} — force reinterpretation
+\item \code{"America/New_York; mode=force"} — same as above
+}
+}
+\examples{
+x <- as.POSIXct("2024-07-01 12:00:00", tz = "UTC")
+tzone(x)
+
+# Relabel only (same instant)
+tzone(x) <- "America/New_York"
+format(x, tz = tzone(x))
+
+# Force reinterpretation (epoch seconds change)
+y <- as.POSIXct("2024-07-01 12:00:00", tz = "UTC")
+tzone(y) <- "America/New_York|force"
+y
+
 }

@@ -10,7 +10,7 @@
 #'
 #' The function is strict by default:
 #' - It will only infer *source* units from the **original provider column name**
-#'   (e.g. `TMP_2m_K` → `"K"`).  
+#'   (e.g. `TMP_2m_K` → `"K"`).
 #' - It never “guesses”. If a column’s source unit cannot be determined from the
 #'   original name or an explicit override (or an existing `"unit"` attribute),
 #'   it errors unless `stop_if_unknown = FALSE`.
@@ -35,7 +35,7 @@
 #'   (via `rename_map`) > existing `attr(dt[[col]], "unit")`. Nothing is guessed.
 #'
 #' @param target_override Optional named list mapping **canonical names** to
-#'   *target* units (overrides the built-in canonical table).  
+#'   *target* units (overrides the built-in canonical table).
 #'   Example: `list(wind10m = "mph", pres = "Pa")`.
 #'
 #' @param stop_if_unknown Logical (default `TRUE`). If `TRUE`, error when any
@@ -201,40 +201,12 @@ wx.units <- function(dt,
                                target_override = NULL,   # list(name="unit")
                                stop_if_unknown = FALSE,
                                debug = FALSE) {
-  
-  
-  
+
+
+
   `%||%` <- function(a,b) if (is.null(a) || length(a)==0L || (length(a)==1L && is.na(a))) b else a
-  
-	weathertools:::.convert_units <- function(x, from, to) {
-	  if (is.null(from) || from == to) return(x)
-	  key <- base::paste(from, "->", to)
-	  switch(key,
-			 "C -> F"       = x * 9/5 + 32,
-			 "F -> C"       = (x - 32) * 5/9,
-			 "degK -> degC"          = x - 273.15,
-			 "K -> degC"          = x - 273.15,
-			 "degF -> degC"       = (x - 32) * 5/9,
-			 "degC -> degF"       = x * 9/5 + 32,
-			 "Pa -> hPa"          = x / 100,
-			 "hPa -> Pa"          = x * 100,
-			 "kt -> m/s"          = x * 0.514444,
-			 "mph -> m/s"         = x / 2.2369362921,
-			 "m/s -> mph"         = x * 2.2369362921,
-			 "m/s -> mi/h"         = x * 2.2369362921,
-			 "feet -> m"          = x * 0.3048,
-			 "mile -> km"         = x * 1.609344,
-			 "kg/m^2/s -> mm/h"   = x * 3600,
-			 "kg/m^2 -> mm"       = x,
-			 "kg/m^2 -> in"       = x / 25.4,   # <-- new
-			 "mm -> in"           = x / 25.4,   # optional direct
-			 # identities
-			 "m/s -> m/s"         = x,  "hPa -> hPa" = x, "% -> %" = x,
-			 "W/m^2 -> W/m^2"     = x,  "deg -> deg" = x, "K -> K" = x,
-			 "dB -> dB"           = x,  "1/m^2/s -> 1/m^2/s" = x,
-			 stop(sprintf("No converter for %s", key)))
-	}
-  
+
+
   # detect source unit from the ORIGINAL (pre-rename) column name only
   .detect_src_unit <- function(old_nm, new_nm) {
     if (grepl("_K$", old_nm))                           return("K")
@@ -253,8 +225,8 @@ wx.units <- function(dt,
     if (new_nm %in% "WDIR")                             return("deg")
     NA_character_
   }
-  
-  
+
+
   .CANONICAL_UNIT <- c(
     ta="degC", ta_sfc="degC", td="degC",
     wind10m="m/s", ugrd10m="m/s", vgrd10m="m/s", GUST="m/s", WDIR="deg",
@@ -265,46 +237,46 @@ wx.units <- function(dt,
     REFC="dB", LTNG="1/m^2/s", LTNG2="1/m^2/s",
     SBT123="K", SBT124="K", SBT113="K", SBT114="K"
   )
-  
+
   .uv_to_spd_dir <- function(u, v) {
     spd <- sqrt(u*u + v*v)
     dir <- (atan2(-u, -v) * 180/pi) %% 360
     list(spd=spd, dir=dir)
   }
-  
-  
-  
-  
+
+
+
+
   stopifnot(data.table::is.data.table(dt))
-  
+
   # harmless suffix strip present in some feeds
   data.table::setnames(dt, names(dt), gsub("_NTAT_K$", "", names(dt)), skip_absent=TRUE)
-  
+
   # --- renaming (optional) ---
   rename_map <- rename_map %||% character()
   src_by_new <- list()
-  
+
   if (length(rename_map)) {
     present_old <- intersect(names(dt), names(rename_map))
     present_new <- unname(rename_map[present_old])
-    
+
     if (debug) cat("Found", length(present_old), "mapped columns to rename\n")
-    
+
     detected <- vapply(seq_along(present_old),
                        function(i) .detect_src_unit(present_old[i], present_new[i]),
                        character(1))
     src_by_new <- as.list(detected); names(src_by_new) <- present_new
-    
+
     if (length(present_old)) {
       data.table::setnames(dt, old = present_old, new = present_new, skip_absent=TRUE)
     }
   } else {
     if (debug) cat("Found 0 mapped columns to rename (skipping rename)\n")
   }
-  
+
   # explicit source overrides win
   if (!is.null(src_override)) for (nm in names(src_override)) src_by_new[[nm]] <- src_override[[nm]]
-  
+
   # derive wind if absent
   if (!"wind10m" %in% names(dt) && all(c("ugrd10m","vgrd10m") %in% names(dt))) {
     uv <- .uv_to_spd_dir(dt$ugrd10m, dt$vgrd10m)
@@ -314,12 +286,12 @@ wx.units <- function(dt,
     src_by_new[["wind10m"]] <- src_by_new[["wind10m"]] %||% "m/s"
     src_by_new[["WDIR"]]    <- src_by_new[["WDIR"]]    %||% "deg"
   }
-  
+
   # targets
   targets <- .CANONICAL_UNIT
   if (!is.null(target_override)) for (nm in names(target_override)) targets[[nm]] <- target_override[[nm]]
   targets <- targets[intersect(names(targets), names(dt))]
-  
+
   # resolve sources (override > detected > column attr)
   # resolve_from <- function(nm) src_by_new[[nm]] %||% attr(dt[[nm]], "unit")
   resolve_from <- function(nm) {
@@ -327,14 +299,14 @@ wx.units <- function(dt,
     if (is.null(val) || length(val)==0L) NA_character_ else val
   }
   from_vec <- vapply(names(targets), resolve_from, character(1))
-  
+
   unknown <- names(targets)[is.na(from_vec) | from_vec == ""]
   if (length(unknown)) {
     msg <- paste0("Unknown source unit for: ", paste(unknown, collapse=", "),
                   ". Provide src_override=list(name='unit') or add an attribute.")
     if (stop_if_unknown) stop(msg) else if (debug) message(msg)
   }
-  
+
   # convert & tag (with verification + debug samples)
   if (debug) conv_report <- data.table::data.table(var=character(), from=character(), to=character(),
                                                    before=character(), after=character())
@@ -342,18 +314,18 @@ wx.units <- function(dt,
     to   <- targets[[nm]]
     from <- resolve_from(nm)
     if (is.na(from) || from == "") next
-    
+
     x <- dt[[nm]]
     if (!identical(from, to)) {
       if (!is.double(x)) storage.mode(x) <- "double"
       b_samp <- paste(utils::head(x, 3), collapse=", ")
-      y <- weathertools:::.convert_units(x, from, to)
+      y <- convert_units(x, from, to)
       a_samp <- paste(utils::head(y, 3), collapse=", ")
-      
+
       # assign back & tag
       dt[[nm]] <- y
       data.table::setattr(dt[[nm]], "unit", to)
-      
+
       # verify critical conversions actually changed scale
       if (from=="K" && to=="degC") {
         if (stats::median(y, na.rm=TRUE) > 150) {
@@ -365,7 +337,7 @@ wx.units <- function(dt,
           stop("Verification failed: '", nm, "' looks like it is still in Pa after Pa->hPa.")
         }
       }
-      
+
       if (debug) conv_report <- rbind(conv_report,
                                       data.table::data.table(var=nm, from=from, to=to,
                                                              before=b_samp, after=a_samp),
@@ -380,17 +352,17 @@ wx.units <- function(dt,
                                       fill=TRUE)
     }
   }
-  
+
   # alias dswrf -> solar
   if (!"solar" %in% names(dt) && "dswrf" %in% names(dt)) {
-    dt[, solar := dswrf]
+    data.table::set(dt, j = "solar", value = dt[["dswrf"]])
     data.table::setattr(dt[["solar"]], "unit", "W/m^2")
     if (debug) conv_report <- rbind(conv_report,
                                     data.table::data.table(var="solar", from="dswrf", to="W/m^2 (alias)",
                                                            before="", after=""),
                                     fill=TRUE)
   }
-  
+
   if (debug && exists("conv_report") && nrow(conv_report)) print(conv_report)
   invisible(dt)
 }

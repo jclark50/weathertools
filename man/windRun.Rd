@@ -2,10 +2,21 @@
 % Please edit documentation in R/windRun.R
 \name{windRun}
 \alias{windRun}
-\title{windRun}
+\title{Wind run}
 \usage{
 windRun(windSpd, archiveInterval = 1, roundBy = 5)
 }
+\arguments{
+\item{windSpd}{Numeric vector of wind speed values.}
+
+\item{archiveInterval}{Numeric or integer. Time interval represented by each wind speed value
+(document units: seconds/minutes/hours, whichever you use).}
+
+\item{roundBy}{Integer; decimal places to round output.}
+}
+\value{
+Numeric vector of wind run (document units).
+}
 \description{
-windRun
+Wind run
 }

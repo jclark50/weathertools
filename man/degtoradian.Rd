@@ -2,10 +2,16 @@
 % Please edit documentation in R/degtoradian.R
 \name{degtoradian}
 \alias{degtoradian}
-\title{degtoradian}
+\title{Degrees to radians}
 \usage{
 degtoradian(deg)
 }
+\arguments{
+\item{deg}{Numeric vector of angles in degrees.}
+}
+\value{
+Numeric vector of angles in radians.
+}
 \description{
-degtoradian
+Degrees to radians
 }
