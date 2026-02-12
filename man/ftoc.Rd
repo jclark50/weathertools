@@ -2,10 +2,50 @@
 % Please edit documentation in R/ftoc.R
 \name{ftoc}
 \alias{ftoc}
-\title{ftoc}
+\title{Convert Fahrenheit to Celsius (lightweight unit attributes)}
 \usage{
 ftoc(f, ignoreattr = FALSE, quiet = TRUE, return_original_as_attr = TRUE, ...)
 }
+\arguments{
+\item{f}{Numeric vector of temperatures in Fahrenheit. May carry \code{attr(., "unit")}.}
+
+\item{ignoreattr}{Logical; if \code{FALSE}, require and validate \code{attr(f, "unit")} is Fahrenheit.}
+
+\item{quiet}{Logical; if \code{FALSE}, emit a short message about the conversion.}
+
+\item{return_original_as_attr}{Logical; if \code{TRUE}, attach \code{attr(out, "original")}
+containing the original numeric input (assumed/validated Fahrenheit).}
+
+\item{...}{Reserved for backward compatibility (ignored).}
+}
+\value{
+Numeric vector of temperatures in Celsius. The result carries
+\code{attr(out, "unit") = "degC"}. If \code{return_original_as_attr = TRUE},
+\code{attr(out, "original")} holds the original numeric Fahrenheit values.
+}
 \description{
-ftoc
+Converts temperatures expressed in Fahrenheit to Celsius using lightweight unit
+handling via \code{attr(x, "unit")}. This function does not use the \pkg{units}
+package.
+}
+\section{Unit handling}{
+
+\itemize{
+\item If \code{ignoreattr = FALSE} (default), \code{f} must have
+\code{attr(f, "unit")} that resolves to \code{"degF"}; otherwise an error is thrown.
+\item If \code{ignoreattr = TRUE}, the attribute is ignored and the input is assumed to be Fahrenheit.
+\item Output is a numeric vector in Celsius with \code{attr(out, "unit") = "degC"}.
+}
+}
+
+\examples{
+x <- c(32, 68, 77)
+attr(x, "unit") <- "degF"
+y <- ftoc(x)
+y
+attr(y, "unit")  # "degC"
+
+# Ignore missing attribute (assume degF)
+ftoc(c(32, 212), ignoreattr = TRUE)
+
 }

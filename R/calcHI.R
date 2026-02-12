@@ -29,19 +29,27 @@
 #'
 #' @examples
 #' # Attribute-driven (degC -> converted internally to degF for core)
-#' ta <- c(30, 35, 40); attr(ta, "unit") <- "degC"
+#' ta <- c(30, 35, 40)
+#' attr(ta, "unit") <- "degC"
 #' rh <- c(50, 60, 65)
 #' hiF <- calcHI(ta, rh, outputunits = "degF")
 #' attr(hiF, "unit")  # "degF"
 #'
-#' # Explicit input units, Celsius output
-#' hiC <- calcHI(ta, rh, inputunits = "degC", outputunits = "degC")
+#' # Explicit input units (no attribute required when ignoreattr = TRUE)
+#' ta2 <- c(86, 95, 104)
+#' hi2 <- calcHI(ta2, rh, inputunits = "degF", outputunits = "degF", ignoreattr = TRUE)
+#' attr(hi2, "unit")  # "degF"
 #'
-#' # Ignore attribute and trust supplied units
-#' attr(ta, "unit") <- "degF"  # wrong on purpose
-#' hi_ok <- calcHI(ta, rh, inputunits = "degC", outputunits = "degF", ignoreattr = TRUE)
+#' # Ignore attribute and trust supplied units (override a bad attribute)
+#' ta_bad <- ta
+#' attr(ta_bad, "unit") <- "degF"  # wrong on purpose
+#' hi_ok <- calcHI(ta_bad, rh, inputunits = "degC", outputunits = "degF", ignoreattr = TRUE)
 #'
-#' # data.table pattern
+#' # Return plain numeric (no unit attribute)
+#' hi_num <- calcHI(ta, rh, outputunits = "degC", returnWithUnits = FALSE)
+#' attr(hi_num, "unit")  # NULL
+#'
+#' # data.table pattern (no {units} required)
 #' if (requireNamespace("data.table", quietly = TRUE)) {
 #'   DT <- data.table::data.table(ta = c(30, 35), rh = c(50, 60))
 #'   attr(DT$ta, "unit") <- "degC"
@@ -129,41 +137,3 @@ calcHI <- function(airTemp, relativeHumidity,
   if (returnWithUnits) attr(hi, "unit") <- u_out
   hi
 }
-
-# ################################################################################################!
-# calcHI <- function(airTemp, relativeHumidity,
-                   # inputunits  = "degF",
-                   # outputunits = "degF",
-                   # roundby     = 1,
-                   # returnWithUnits = FALSE) {
-  # require(units)
-  
-  # # 1) If input is in degC, convert to degF for HI calculation
-  # if (inputunits == "degC") {
-    # airTemp <- set_units(airTemp, "degC")  # make sure it's typed
-    # airTemp <- set_units(airTemp, "degF")  # convert to degF
-  # }
-  
-  # # 2) Convert to plain numeric (in degF)
-  # at <- as.numeric(airTemp)
-  
-  # # 3) Calculate HI using the C++ function (returns degF)
-  # hi_f <- calcHI_parallel(at, relativeHumidity)
-  
-  # # 4) Convert result to output units
-  # if (outputunits == "degC") {
-    # hi <- set_units(hi_f, "degF")
-    # hi <- set_units(hi, "degC")
-  # } else {
-    # hi <- set_units(hi_f, "degF")
-  # }
-  
-  # # 5) Round result
-  # hi <- round(hi, roundby)
-  
-  # if (returnWithUnits == FALSE){
-    # hi = as.numeric(hi)
-  # }
-  
-  # return(hi)
-# }

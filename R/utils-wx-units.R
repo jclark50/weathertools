@@ -146,7 +146,7 @@
   u <- trimws(as.character(u))
   if (!nzchar(u)) return(NA_character_)
   u <- gsub("\\\\", "", u)
-  u <- gsub("°", "", u, fixed = TRUE)
+  u <- gsub("\\°", "", u, fixed = TRUE)
   u <- toupper(u)
   if (u %in% c("C","DEGC","CELSIUS")) return("degC")
   if (u %in% c("F","DEGF","FAHRENHEIT")) return("degF")

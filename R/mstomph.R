@@ -1,36 +1,66 @@
-#' mstomph
-#' @export
-mstomph <- function(thedata, ignoreattr = FALSE, quiet = TRUE, return_original_as_attr = TRUE, ...) {
-  # Assign units to input
-  thedata_units <- set_units(thedata, "m/s", mode = "standard", auto_convert = FALSE)
-  
-  # Check unit attribute if ignoreattr is FALSE
-  if (!ignoreattr) {
-    current_unit <- units(thedata_units)
-    if (tolower(as.character(current_unit)) != "m/s") {
-      cat("From unit is", red("ms"), "but unit attribute is", red(as.character(current_unit)), "\n")
-      stop("Unit mismatch.")
-    }
-  }
-  
-  # Inform the user about the conversion if quiet is FALSE
-  if (!quiet) {
-    cat("Converted m/s to mph\n")
-  }
-  
-  # Perform the conversion to miles per hour
-  mph_units <- set_units(thedata_units, "mph", mode = "standard")
-  
-  # Remove units to store as numeric, then reassign with lowercase unit
-  mph_numeric <- drop_units(mph_units)
-  attr(mph_numeric, "unit") <- "mph"
-  
-  # Optionally retain the original m/s values as an attribute
-  if (return_original_as_attr) {
-    attr(mph_numeric, "original") <- drop_units(thedata_units)
-  }
-  
-  return(mph_numeric)
-}
 
 ################################################################################################!
+
+#' Convert meters per second to miles per hour (lightweight unit attributes)
+#'
+#' Converts wind speed from \code{"m/s"} to \code{"mph"} using lightweight unit
+#' handling via \code{attr(x, "unit")}. This function does not use the \pkg{units}
+#' package.
+#'
+#' @section Unit handling:
+#' \itemize{
+#'   \item If \code{ignoreattr = FALSE} (default), \code{thedata} must have
+#'         \code{attr(thedata, "unit")} that resolves to \code{"m/s"}; otherwise an error is thrown.
+#'   \item If \code{ignoreattr = TRUE}, the attribute is ignored and the input is assumed to be \code{"m/s"}.
+#'   \item Output is a numeric vector in \code{"mph"} with \code{attr(out, "unit") = "mph"}.
+#' }
+#'
+#' @param thedata Numeric vector of wind speed in meters per second. May carry \code{attr(., "unit")}.
+#' @param ignoreattr Logical; if \code{FALSE}, require and validate \code{attr(thedata, "unit")} is \code{"m/s"}.
+#' @param quiet Logical; if \code{FALSE}, emit a short message about the conversion.
+#' @param return_original_as_attr Logical; if \code{TRUE}, attach \code{attr(out, "original")}
+#'   containing the original numeric input (assumed/validated \code{"m/s"}).
+#' @param ... Reserved for backward compatibility (ignored).
+#'
+#' @return Numeric vector of wind speed in miles per hour. The result carries
+#'   \code{attr(out, "unit") = "mph"}. If \code{return_original_as_attr = TRUE},
+#'   \code{attr(out, "original")} holds the original numeric meters-per-second values.
+#'
+#' @examples
+#' x <- c(0, 5, 10)
+#' attr(x, "unit") <- "m/s"
+#' y <- mstomph(x)
+#' y
+#' attr(y, "unit")  # "mph"
+#' attr(y, "original")
+#'
+#' # Ignore missing attribute (assume m/s)
+#' mstomph(c(5, 7), ignoreattr = TRUE)
+#'
+#' @export
+mstomph <- function(thedata, ignoreattr = FALSE, quiet = TRUE,
+                    return_original_as_attr = TRUE, ...) {
+
+  x_num <- as.numeric(thedata)
+
+  if (!ignoreattr) {
+    u <- .norm_u(attr(thedata, "unit", exact = TRUE))
+    if (is.na(u)) {
+      stop("mstomph(): input has no 'unit' attribute. Set attr(x,'unit') <- 'm/s' or call with ignoreattr=TRUE.", call. = FALSE)
+    }
+    if (!identical(u, "m/s")) {
+      msg <- sprintf("mstomph(): expected attr(thedata,'unit') == 'm/s' but got '%s'.", u)
+      # optional colored emphasis if crayon is installed
+      cat("From unit is ", .crayon_red("m/s"), " but unit attribute is ", .crayon_red(u), "\n", sep = "")
+      stop(msg, call. = FALSE)
+    }
+  }
+
+  out <- .convert_units(x_num, from = "m/s", to = "mph")
+
+  if (!quiet) message("Converted m/s to mph")
+
+  attr(out, "unit") <- "mph"
+  if (return_original_as_attr) attr(out, "original") <- x_num
+  out
+}

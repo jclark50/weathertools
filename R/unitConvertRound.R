@@ -1,55 +1,67 @@
-#' Convert and Round a Vector Between Units
+################################################################################################!
+
+#' Convert and round a vector between units (lightweight conversions)
 #'
-#' @description
-#' `convert_units_round` converts numeric vectors from one unit to another using the
-#' \pkg{units} package, then rounds the result to a specified number of decimal places.
-#' This can handle temperature (e.g., "degC" → "degF"), speed ("m/s" → "mi/h"),
-#' and any other convertible units supported by \pkg{units}.
+#' Converts numeric vectors from one unit to another using weathertools' internal
+#' conversion table (see \code{.convert_units()}) and rounds the result to a
+#' specified number of decimal places. This function does not use the \pkg{units}
+#' package and only supports unit pairs present in the internal conversion table.
 #'
-#' @param x Numeric or units object. The values to convert.
-#' @param from Character. Original unit of \code{x} (e.g., "degC", "m/s").
-#' @param to Character. Desired target unit (e.g., "degF", "mi/h").
-#' @param digits Integer. Number of decimal places to round the converted values (default 1).
+#' @param x Numeric vector (optionally carrying \code{attr(x, "unit")}).
+#' @param from Character. Original unit of \code{x} (e.g., \code{"degC"}, \code{"m/s"}).
+#' @param to Character. Desired target unit (e.g., \code{"degF"}, \code{"mph"}).
+#' @param digits Integer. Number of decimal places to round the converted values (default \code{2}).
+#' @param strip Logical. If \code{TRUE}, remove the unit attribute from the result (default \code{FALSE}).
 #'
-#' @return A numeric vector of the converted and rounded values.
+#' @return A numeric vector of converted values, rounded to \code{digits}. By default,
+#'   \code{attr(out, "unit")} is set to the canonical target unit \code{to}.
 #'
 #' @details
-#' Internally, this function wraps \code{set_units(x, from)} and \code{set_units(..., to)},
-#' then drops the units and applies rounding. It requires that the \pkg{units} package be
-#' installed and that the requested units are compatible for conversion.
+#' This function calls \code{.convert_units(x, from, to)} and then rounds the result.
+#' If a requested conversion is not present in the internal table, an error is thrown.
 #'
-#' @export
+#' If \code{x} already has \code{attr(x, "unit")} and \code{from} is \code{NULL},
+#' the attribute is used as the source unit. If both are provided and disagree,
+#' an error is thrown unless \code{strip = TRUE} is used to explicitly drop unit
+#' tagging on output (conversion still requires a valid \code{from}).
 #'
 #' @examples
-#' \dontrun{
-#' # Convert WBGT from °C to °F
+#' # Convert temperature from degC to degF
 #' wbgt_c <- c(20, 25, 30)
 #' unitConvertRound(wbgt_c, from = "degC", to = "degF", digits = 1)
 #'
-#' # Convert wind speed from m/s to mi/h
+#' # Convert wind speed from m/s to mph
 #' speed_ms <- c(5, 10, 15)
-#' unitConvertRound(speed_ms, from = "m/s", to = "mi/h", digits = 2)
-#' }
+#' unitConvertRound(speed_ms, from = "m/s", to = "mph", digits = 2)
+#'
+#' # Attribute-driven source unit (from inferred)
+#' x <- c(0, 10)
+#' attr(x, "unit") <- "degC"
+#' unitConvertRound(x, from = NULL, to = "degF", digits = 1)
+#'
+#' @export
 unitConvertRound <- function(x, from, to, digits = 2, strip = FALSE) {
-  if (!requireNamespace("units", quietly = TRUE)) {
-    stop("Package 'units' is required for unit conversions. Please install it.")
-  }
-  # If x has units, ensure they match `from`
-  if (inherits(x, "units")) {
-    current <- as.character(units(x))
-    if (!identical(current, from)) {
-      stop(sprintf("Input has units '%s' but 'from' is '%s'", current, from))
+
+  # infer / validate 'from' against attr(x,"unit") if present
+  u_attr <- .norm_u(attr(x, "unit", exact = TRUE))
+  if (is.null(from) || (length(from) == 1L && is.na(from))) {
+    from_use <- u_attr
+    if (is.na(from_use)) {
+      stop("unitConvertRound(): 'from' is NULL and x has no 'unit' attribute.", call. = FALSE)
+    }
+  } else {
+    from_use <- .norm_u(from)
+    if (!is.na(u_attr) && !identical(u_attr, from_use)) {
+      stop(sprintf("unitConvertRound(): attr(x,'unit')='%s' but from='%s'.", u_attr, from_use), call. = FALSE)
     }
   }
-  # Perform conversion: assign units if needed, then convert
-  converted <- x %>%
-    units::set_units(from, mode = "standard") %>%
-    units::set_units(to,    mode = "standard")
-  # Round
-  rounded <- round(converted, digits)
-  # Strip units if requested
-  if (strip) {
-    return(as.numeric(rounded))
-  }
-  rounded
+
+  to_use <- .norm_u(to)
+  if (is.na(to_use)) stop("unitConvertRound(): 'to' is missing/unknown.", call. = FALSE)
+
+  out <- .convert_units(as.numeric(x), from = from_use, to = to_use)
+  out <- round(out, digits)
+
+  if (!strip) attr(out, "unit") <- to_use
+  out
 }

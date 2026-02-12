@@ -2,7 +2,7 @@
 % Please edit documentation in R/mstomh.R
 \name{mstomh}
 \alias{mstomh}
-\title{mstomh}
+\title{Convert meters per second to miles per hour (lightweight unit attributes)}
 \usage{
 mstomh(
   windspeed,
@@ -12,6 +12,46 @@ mstomh(
   ...
 )
 }
+\arguments{
+\item{windspeed}{Numeric vector of wind speed in meters per second. May carry \code{attr(., "unit")}.}
+
+\item{ignoreattr}{Logical; if \code{FALSE}, require and validate \code{attr(windspeed, "unit")} is \code{"m/s"}.}
+
+\item{quiet}{Logical; if \code{FALSE}, emit a short message about the conversion.}
+
+\item{return_original_as_attr}{Logical; if \code{TRUE}, attach \code{attr(out, "original")}
+containing the original numeric input (assumed/validated \code{"m/s"}).}
+
+\item{...}{Reserved for backward compatibility (ignored).}
+}
+\value{
+Numeric vector of wind speed in miles per hour. The result carries
+\code{attr(out, "unit") = "mph"}. If \code{return_original_as_attr = TRUE},
+\code{attr(out, "original")} holds the original numeric meters-per-second values.
+}
 \description{
-mstomh
+Converts wind speed from \code{"m/s"} to \code{"mph"} using lightweight unit
+handling via \code{attr(x, "unit")}. This function does not use the \pkg{units}
+package.
+}
+\section{Unit handling}{
+
+\itemize{
+\item If \code{ignoreattr = FALSE} (default), \code{windspeed} must have
+\code{attr(windspeed, "unit")} that resolves to \code{"m/s"}; otherwise an error is thrown.
+\item If \code{ignoreattr = TRUE}, the attribute is ignored and the input is assumed to be \code{"m/s"}.
+\item Output is a numeric vector in \code{"mph"} with \code{attr(out, "unit") = "mph"}.
+}
+}
+
+\examples{
+x <- c(0, 5, 10)
+attr(x, "unit") <- "m/s"
+y <- mstomph(x)
+y
+attr(y, "unit")  # "mph"
+
+# Ignore missing attribute (assume m/s)
+mstomph(c(5, 7), ignoreattr = TRUE)
+
 }

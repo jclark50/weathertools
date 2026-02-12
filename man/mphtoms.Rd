@@ -2,7 +2,7 @@
 % Please edit documentation in R/mphtoms.R
 \name{mphtoms}
 \alias{mphtoms}
-\title{mphtoms}
+\title{Convert miles per hour to meters per second (lightweight unit attributes)}
 \usage{
 mphtoms(
   thedata,
@@ -12,6 +12,47 @@ mphtoms(
   ...
 )
 }
+\arguments{
+\item{thedata}{Numeric vector of wind speed in miles per hour. May carry \code{attr(., "unit")}.}
+
+\item{ignoreattr}{Logical; if \code{FALSE}, require and validate \code{attr(thedata, "unit")} is \code{"mph"}.}
+
+\item{quiet}{Logical; if \code{FALSE}, emit a short message about the conversion.}
+
+\item{return_original_as_attr}{Logical; if \code{TRUE}, attach \code{attr(out, "original")}
+containing the original numeric input (assumed/validated \code{"mph"}).}
+
+\item{...}{Reserved for backward compatibility (ignored).}
+}
+\value{
+Numeric vector of wind speed in meters per second. The result carries
+\code{attr(out, "unit") = "m/s"}. If \code{return_original_as_attr = TRUE},
+\code{attr(out, "original")} holds the original numeric miles-per-hour values.
+}
 \description{
-mphtoms
+Converts wind speed from \code{"mph"} to \code{"m/s"} using lightweight unit
+handling via \code{attr(x, "unit")}. This function does not use the \pkg{units}
+package.
+}
+\section{Unit handling}{
+
+\itemize{
+\item If \code{ignoreattr = FALSE} (default), \code{thedata} must have
+\code{attr(thedata, "unit")} that resolves to \code{"mph"}; otherwise an error is thrown.
+\item If \code{ignoreattr = TRUE}, the attribute is ignored and the input is assumed to be \code{"mph"}.
+\item Output is a numeric vector in \code{"m/s"} with \code{attr(out, "unit") = "m/s"}.
+}
+}
+
+\examples{
+x <- c(0, 10, 25)
+attr(x, "unit") <- "mph"
+y <- mphtoms(x)
+y
+attr(y, "unit")  # "m/s"
+attr(y, "original")
+
+# Ignore missing attribute (assume mph)
+mphtoms(c(5, 15), ignoreattr = TRUE)
+
 }

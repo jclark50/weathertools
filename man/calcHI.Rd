@@ -56,19 +56,27 @@ when provided; otherwise it errors on mismatch/missing attribute.
 
 \examples{
 # Attribute-driven (degC -> converted internally to degF for core)
-ta <- c(30, 35, 40); attr(ta, "unit") <- "degC"
+ta <- c(30, 35, 40)
+attr(ta, "unit") <- "degC"
 rh <- c(50, 60, 65)
 hiF <- calcHI(ta, rh, outputunits = "degF")
 attr(hiF, "unit")  # "degF"
 
-# Explicit input units, Celsius output
-hiC <- calcHI(ta, rh, inputunits = "degC", outputunits = "degC")
+# Explicit input units (no attribute required when ignoreattr = TRUE)
+ta2 <- c(86, 95, 104)
+hi2 <- calcHI(ta2, rh, inputunits = "degF", outputunits = "degF", ignoreattr = TRUE)
+attr(hi2, "unit")  # "degF"
 
-# Ignore attribute and trust supplied units
-attr(ta, "unit") <- "degF"  # wrong on purpose
-hi_ok <- calcHI(ta, rh, inputunits = "degC", outputunits = "degF", ignoreattr = TRUE)
+# Ignore attribute and trust supplied units (override a bad attribute)
+ta_bad <- ta
+attr(ta_bad, "unit") <- "degF"  # wrong on purpose
+hi_ok <- calcHI(ta_bad, rh, inputunits = "degC", outputunits = "degF", ignoreattr = TRUE)
 
-# data.table pattern
+# Return plain numeric (no unit attribute)
+hi_num <- calcHI(ta, rh, outputunits = "degC", returnWithUnits = FALSE)
+attr(hi_num, "unit")  # NULL
+
+# data.table pattern (no {units} required)
 if (requireNamespace("data.table", quietly = TRUE)) {
   DT <- data.table::data.table(ta = c(30, 35), rh = c(50, 60))
   attr(DT$ta, "unit") <- "degC"
