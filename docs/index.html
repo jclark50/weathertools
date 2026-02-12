@@ -1,8 +1,296 @@
 <!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>weathertools</title></head>
-  <body>
-    <h1>weathertools</h1>
-    <p><a href="weathertools_1.0.0.pdf">Package manual (PDF)</a></p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>weathertools</title>
+  <meta name="description" content="R utilities for cleaning, harmonizing, and computing common weather metrics (Heat Index, Dew Point, Wet Bulb, wind direction averaging, unit conversion)." />
+
+  <style>
+    :root{
+      --bg: #0b1220;
+      --card: rgba(255,255,255,0.06);
+      --card2: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.68);
+      --link: #7dd3fc;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(1100px 500px at 15% 10%, rgba(56,189,248,0.35), transparent 60%),
+        radial-gradient(900px 500px at 80% 20%, rgba(168,85,247,0.30), transparent 65%),
+        radial-gradient(1000px 700px at 50% 95%, rgba(34,197,94,0.14), transparent 60%),
+        var(--bg);
+      line-height: 1.45;
+    }
+
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 56px 20px;
+    }
+
+    .header {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 26px;
+    }
+
+    .title-block h1 {
+      margin: 0 0 8px 0;
+      font-size: 44px;
+      letter-spacing: -0.02em;
+    }
+    .title-block p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 62ch;
+      font-size: 16px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 860px){
+      .header { flex-direction: column; }
+      .badges { justify-content: flex-start; }
+      .grid { grid-template-columns: 1fr; }
+      .title-block h1 { font-size: 38px; }
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--card), rgba(255,255,255,0.03));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .card p {
+      margin: 0 0 10px 0;
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 520px){
+      .actions { grid-template-columns: 1fr; }
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.07);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .btn:hover {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(125,211,252,0.25), rgba(168,85,247,0.18));
+      border-color: rgba(125,211,252,0.28);
+    }
+
+    .btn.primary:hover {
+      background: linear-gradient(135deg, rgba(125,211,252,0.30), rgba(168,85,247,0.22));
+    }
+
+    .kvs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+      margin-top: 10px;
+    }
+    .kv {
+      padding: 12px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+    }
+    .kv .k { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .kv .v { font-size: 14px; color: var(--text); font-weight: 600; }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.84);
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.10);
+      overflow-x: auto;
+      margin: 10px 0 0 0;
+      white-space: nowrap;
+    }
+
+    .footer {
+      margin-top: 18px;
+      color: rgba(255,255,255,0.55);
+      font-size: 12.5px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .sep {
+      height: 1px;
+      background: rgba(255,255,255,0.10);
+      margin: 14px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="title-block">
+        <h1>weathertools</h1>
+        <p>
+          R utilities for cleaning, harmonizing, and computing common weather metrics (Heat Index, Dew Point, Wet Bulb),
+          plus helpers for wind direction averaging and lightweight unit conversion.
+        </p>
+      </div>
+
+      <div class="badges" aria-label="quick links">
+        <span class="badge">GitHub Pages</span>
+        <span class="badge">Docs folder</span>
+        <span class="badge">PDF manual</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Start here</h2>
+        <p>
+          Most users only need one of these: download the PDF manual, view the repository, or install from GitHub.
+        </p>
+
+        <div class="actions">
+          <a class="btn primary" href="weathertools_1.0.0.pdf">Package manual (PDF)</a>
+          <a class="btn" href="https://github.com/jclark50/weathertools">View repository</a>
+        </div>
+
+        <div class="sep"></div>
+
+        <h2>Install</h2>
+        <p>Install the current version directly from GitHub:</p>
+        <div class="mono">remotes::install_github("jclark50/weathertools")</div>
+
+        <div class="sep"></div>
+
+        <h2>Quick examples</h2>
+        <p>Compute common derived metrics from temperature + humidity:</p>
+        <div class="mono">hi &lt;- calcHI(temp_c, rh_pct, outputunits = "degC")</div>
+        <div class="mono">dp &lt;- calcTD(temp_c, rh_pct, outputunits = "degC")</div>
+        <div class="mono">wb &lt;- calcWB(temp_c, rh_pct, inputunits = "degC", outputunits = "degC")</div>
+      </div>
+
+      <div class="card">
+        <h2>What’s inside</h2>
+        <p>A small toolbox that focuses on the annoying parts of real-world weather data.</p>
+
+        <div class="kvs">
+          <div class="kv">
+            <div class="k">Comfort / humidity</div>
+            <div class="v">Heat Index, dew point, wet-bulb</div>
+          </div>
+          <div class="kv">
+            <div class="k">Wind helpers</div>
+            <div class="v">Correct direction averaging</div>
+          </div>
+          <div class="kv">
+            <div class="k">Units</div>
+            <div class="v">C/F/K, Pa/hPa, mph/m/s</div>
+          </div>
+          <div class="kv">
+            <div class="k">Harmonization</div>
+            <div class="v"><span class="mono" style="display:inline-block; padding:4px 8px; margin:0;">wx.units()</span> for messy feeds</div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <h2>Direct links</h2>
+        <p>
+          If you want a stable “manual” link for the README:
+        </p>
+        <div class="mono">https://jclark50.github.io/weathertools/weathertools_1.0.0.pdf</div>
+
+        <div class="footer">
+          <div>© <span id="yr"></span> weathertools</div>
+          <div><a href="https://github.com/jclark50/weathertools/issues">Report an issue</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("yr").textContent = new Date().getFullYear();
+  </script>
+</body>
 </html>
