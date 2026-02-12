@@ -206,7 +206,7 @@ wx.units <- function(dt,
   
   `%||%` <- function(a,b) if (is.null(a) || length(a)==0L || (length(a)==1L && is.na(a))) b else a
   
-	weathertools:::.convert_units <- function(x, from, to) {
+	.convert_units <- function(x, from, to) {
 	  if (is.null(from) || from == to) return(x)
 	  key <- base::paste(from, "->", to)
 	  switch(key,
@@ -347,7 +347,7 @@ wx.units <- function(dt,
     if (!identical(from, to)) {
       if (!is.double(x)) storage.mode(x) <- "double"
       b_samp <- paste(utils::head(x, 3), collapse=", ")
-      y <- weathertools:::.convert_units(x, from, to)
+      y <- .convert_units(x, from, to)
       a_samp <- paste(utils::head(y, 3), collapse=", ")
       
       # assign back & tag

@@ -7,7 +7,7 @@
 # #' Internal: conv a temperature unit token
 # #' @keywords internal
 # #' @noRd
-# # weathertools:::.convert_units <- function(x, from, to) {
+# # .convert_units <- function(x, from, to) {
   # # if (is.null(from) || from == to) return(x)
   # # key <- base::paste(from, "->", to)
   # # switch(key,
@@ -80,7 +80,7 @@
 
 #' @keywords internal
 #' @noRd
-weathertools:::.convert_units <- function(x, from, to) {
+.convert_units <- function(x, from, to) {
   if (is.null(from) || is.null(to)) return(x)
   from <- .norm_u(from); to <- .norm_u(to)
   if (is.na(from) || is.na(to) || from == to) return(x)

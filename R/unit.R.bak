@@ -3,7 +3,7 @@
 #' Provides a simple way to read and set a `"unit"` attribute on numeric
 #' vectors. The replacement form (`unit(x) <- value`) can also convert values
 #' between supported units (handled by the package-internal
-#' \code{weathertools:::.convert_units()}) and optionally round the result.
+#' \code{.convert_units()}) and optionally round the result.
 #'
 #' \strong{Accepted assignment forms for \code{value}:}
 #' \itemize{
@@ -43,7 +43,7 @@
 #'
 #' @section Conversions:
 #' The actual numeric conversions are performed by the internal
-#' \code{weathertools:::.convert_units(x, from, to)}. Typical pairs supported in this package
+#' \code{.convert_units(x, from, to)}. Typical pairs supported in this package
 #' include temperature (\code{degC}, \code{degF}, \code{K}/\code{degK}), pressure
 #' (\code{hPa}, \code{Pa}), wind speed (\code{m/s}, \code{mph}, \code{kt}),
 #' precipitation depth (\code{kg/m^2}, \code{mm}, \code{in}), radiation
@@ -230,7 +230,7 @@ unit <- function(x) {
     }
 
     # Normal explicit conversion
-    x <- weathertools:::.convert_units(x, parsed$src, parsed$dst)
+    x <- .convert_units(x, parsed$src, parsed$dst)
     did_convert <- TRUE
 
     if (!is.null(digits) && (did_convert || inline_digits)) x <- base::round(x, digits)
@@ -241,7 +241,7 @@ unit <- function(x) {
 
   # ---- only a target provided: "dst" (use current attr as source if present) ----
   if (!is.null(old) && !identical(old, parsed$dst)) {
-    x <- weathertools:::.convert_units(x, old, parsed$dst)
+    x <- .convert_units(x, old, parsed$dst)
     did_convert <- TRUE
   } else {
     # Optional: forbid temperature tag-only (no known source)
