@@ -1,8 +1,8 @@
 # weathertools
 
 > **Package manual (CRAN-style PDF):**  
-> For a complete function reference in the standard R “package manual” format, see:  
-> `https://github.com/jclark50/weathertools/weathertools_1.0.0.pdf`
+> For a complete function reference in the standard R “package manual” format, see PDF under /docs:  
+> https://github.com/jclark50/weathertools/blob/main/docs/weathertools_1.0.0.pdf
 
 **weathertools** is an R package for turning raw “weather-like” columns (temperature, humidity, wind, pressure, time) into **clean, consistent, analysis-ready variables**—without needing a climate or meteorology background.
 
