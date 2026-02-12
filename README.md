@@ -1,4 +1,3 @@
-````markdown
 # weathertools
 
 **weathertools** is an R package for turning raw “weather-like” columns (temperature, humidity, wind, pressure, time) into **clean, consistent, analysis-ready variables**—without needing a climate or meteorology background.
