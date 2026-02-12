@@ -40,6 +40,10 @@
 #' @export
 mstomph <- function(thedata, ignoreattr = FALSE, quiet = TRUE,
                     return_original_as_attr = TRUE, ...) {
+  .crayon_red <- function(x) {
+    if (requireNamespace("crayon", quietly = TRUE)) crayon::red(x) else x
+  }
+
 
   x_num <- as.numeric(thedata)
 
