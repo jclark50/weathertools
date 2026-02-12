@@ -28,7 +28,7 @@ When rounding is applied, \code{attr(x, "unit_digits")} is also set.
 Provides a simple way to read and set a \code{"unit"} attribute on numeric
 vectors. The replacement form (\code{unit(x) <- value}) can also convert values
 between supported units (handled by the package-internal
-\code{.convert_units()}) and optionally round the result.
+\code{weathertools:::.convert_units()}) and optionally round the result.
 }
 \details{
 \strong{Accepted assignment forms for \code{value}:}
@@ -70,7 +70,7 @@ attempting \code{unit(x) <- "degF"} on an untagged vector will error; use
 \section{Conversions}{
 
 The actual numeric conversions are performed by the internal
-\code{.convert_units(x, from, to)}. Typical pairs supported in this package
+\code{weathertools:::.convert_units(x, from, to)}. Typical pairs supported in this package
 include temperature (\code{degC}, \code{degF}, \code{K}/\code{degK}), pressure
 (\code{hPa}, \code{Pa}), wind speed (\code{m/s}, \code{mph}, \code{kt}),
 precipitation depth (\code{kg/m^2}, \code{mm}, \code{in}), radiation

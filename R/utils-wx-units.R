@@ -45,27 +45,27 @@
   u <- gsub("\\\\","",u)
   u <- gsub("°","",u, fixed=TRUE)
   u_up <- toupper(u)
-  
+
   # temperatures
   if (u_up %in% c("C","DEGC","CELSIUS")) return("degC")
   if (u_up %in% c("F","DEGF","FAHRENHEIT")) return("degF")
   if (u_up %in% c("K","DEGK","KELVIN")) return("K")
-  
+
   # wind speed
   if (u_up %in% c("MPH","MI/H","MIPH")) return("mph")
   if (u_up %in% c("M/S","MPS","MS-1","MS^-1")) return("m/s")
   if (u_up %in% c("KT","KTS","KNOT","KNOTS")) return("kt")
-  
+
   # pressure
   if (u_up %in% c("HPA")) return("hPa")
   if (u_up %in% c("PA"))  return("Pa")
-  
+
   # length / distance
   if (u_up %in% c("M"))   return("m")
   if (u_up %in% c("FT","FEET")) return("feet")
   if (u_up %in% c("KM"))  return("km")
   if (u_up %in% c("MI","MILE","MILES")) return("mile")
-  
+
   # precip / radiation / misc
   if (u_up %in% c("MM")) return("mm")
   if (u_up %in% c("IN","INCH","INCHES")) return("in")
@@ -74,19 +74,19 @@
   if (u_up %in% c("%","PCT","PERCENT")) return("%")
   if (u_up %in% c("DEG","DEGREE","DEGREES")) return("deg")
   if (u_up %in% c("1/M^2/S")) return("1/m^2/s")
-  
+
   u  # as-is
 }
 
 #' @keywords internal
 #' @noRd
-weathertools:::.convert_units <- function(x, from, to) {
+.convert_units <- function(x, from, to) {
   if (is.null(from) || is.null(to)) return(x)
   from <- .norm_u(from); to <- .norm_u(to)
   if (is.na(from) || is.na(to) || from == to) return(x)
-  
+
   key <- base::paste(from, "->", to)
-  
+
   switch(key,
          # --- Temperatures (complete triangle C/F/K) ---
          "degC -> degF" = x * 9/5 + 32,
@@ -95,23 +95,23 @@ weathertools:::.convert_units <- function(x, from, to) {
          "K -> degC"    = x - 273.15,
          "degF -> K"    = (x - 32) * 5/9 + 273.15,   # NEW
          "K -> degF"    = (x - 273.15) * 9/5 + 32,   # NEW
-         
+
          # --- Pressure ---
          "Pa -> hPa"    = x / 100,
          "hPa -> Pa"    = x * 100,
-         
+
          # --- Wind speed ---
          "kt -> m/s"    = x * 0.514444,
          "m/s -> kt"    = x / 0.514444,              # NEW
          "mph -> m/s"   = x / 2.2369362921,
          "m/s -> mph"   = x * 2.2369362921,
-         
+
          # --- Distance / height ---
          "feet -> m"    = x * 0.3048,
          "m -> feet"    = x / 0.3048,                # NEW
          "mile -> km"   = x * 1.609344,
          "km -> mile"   = x / 1.609344,              # NEW
-         
+
          # --- Precip / fluxes (water equiv) ---
          "kg/m^2/s -> mm/h" = x * 3600,
          "mm/h -> kg/m^2/s" = x / 3600,              # NEW
@@ -121,7 +121,7 @@ weathertools:::.convert_units <- function(x, from, to) {
          "in -> mm"         = x * 25.4,              # NEW
          "kg/m^2 -> in"     = x / 25.4,              # (via mm equivalence)
          "in -> kg/m^2"     = x * 25.4,              # NEW
-         
+
          # --- Identities (common tokens) ---
          "m/s -> m/s"   = x, "mph -> mph" = x, "kt -> kt" = x,
          "hPa -> hPa"   = x, "Pa -> Pa"   = x,
@@ -131,12 +131,12 @@ weathertools:::.convert_units <- function(x, from, to) {
          "mm -> mm"     = x, "mm/h -> mm/h" = x, "km -> km" = x, "m -> m" = x,
          "feet -> feet" = x, "mile -> mile" = x, "in -> in" = x,
          "1/m^2/s -> 1/m^2/s" = x,
-         
+
          # Fallback:
          stop(sprintf("No converter for %s", key))
   )
 }
-  
+
 
 #' Internal: normalize a temperature unit token
 #' @keywords internal
