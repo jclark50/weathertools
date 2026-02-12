@@ -2,22 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 calcDewpoint_cpp <- function(airTemp, relativeHumidity, inputunits = "degF", outputunits = "degF", roundby = 2L) {
-    .Call('_weathertools_calcDewpoint_cpp', PACKAGE = 'weathertools', airTemp, relativeHumidity, inputunits, outputunits, roundby)
+    .Call(`_weathertools_calcDewpoint_cpp`, airTemp, relativeHumidity, inputunits, outputunits, roundby)
 }
 
 calcHI_parallel <- function(airTemp, relativeHumidity) {
-    .Call('_weathertools_calcHI_parallel', PACKAGE = 'weathertools', airTemp, relativeHumidity)
+    .Call(`_weathertools_calcHI_parallel`, airTemp, relativeHumidity)
 }
 
 calcRH_cpp <- function(airTemp, dewPoint, inputunits = "degC") {
-    .Call('_weathertools_calcRH_cpp', PACKAGE = 'weathertools', airTemp, dewPoint, inputunits)
+    .Call(`_weathertools_calcRH_cpp`, airTemp, dewPoint, inputunits)
 }
 
 calcRH_vpd_cpp <- function(airTemp, vpd, inputunits = "degC") {
-    .Call('_weathertools_calcRH_vpd_cpp', PACKAGE = 'weathertools', airTemp, vpd, inputunits)
+    .Call(`_weathertools_calcRH_vpd_cpp`, airTemp, vpd, inputunits)
 }
 
 calcWB_cpp <- function(airTemp, relativeHumidity, inputunits = "degC", outputunits = "degF", method = NULL) {
-    .Call('_weathertools_calcWB_cpp', PACKAGE = 'weathertools', airTemp, relativeHumidity, inputunits, outputunits, method)
+    .Call(`_weathertools_calcWB_cpp`, airTemp, relativeHumidity, inputunits, outputunits, method)
 }
 

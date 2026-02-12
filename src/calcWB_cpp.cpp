@@ -1,14 +1,18 @@
 
-#include <Rcpp.h>
-using namespace Rcpp;
+// #include <Rcpp.h>
+// using namespace Rcpp;
 
 // Helper function to convert a string to uppercase
+#include <Rcpp.h>
+#include <cctype>   // std::toupper
+using namespace Rcpp;
+
 std::string to_uppercase(const std::string& str) {
-    std::string upper_str = str;
-    for(int i = 0; i < upper_str.size(); ++i) {
-        upper_str[i] = std::toupper(upper_str[i]);
-    }
-    return upper_str;
+  std::string upper_str = str;
+  for (std::string::size_type i = 0; i < upper_str.size(); ++i) {
+    upper_str[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(upper_str[i])));
+  }
+  return upper_str;
 }
 
 // [[Rcpp::export]]
