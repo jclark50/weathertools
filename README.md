@@ -1,40 +1,60 @@
 # weathertools
 
-**weathertools** is a small, fast, dependency-light R package for common weather / atmosphere calculations—focused on **practical use in data workflows** (especially `data.table`) rather than on meteorology jargon or heavyweight unit systems. 
+**weathertools** is an R package that helps you turn raw “weather-like” columns (temperature, humidity, wind, pressure, etc.) into **useful, consistent, analysis-ready values**—without needing a meteorology background. It’s built for everyday data workflows (including `data.table`) and keeps “units” handling lightweight and practical. 
 
-It includes utilities for:
+If you have ever asked:
 
-* **Heat & humidity metrics:** heat index, wet-bulb temperature, dew point, relative humidity 
-* **Pressure conversions:** station ↔ sea-level style adjustments 
-* **Wind helpers:** wind chill, u/v → wind speed/direction, rolling-average wind direction 
-* **Lightweight unit tagging & conversion:** no `{units}` classes required 
-* **Schema/unit harmonization for messy feeds:** rename + convert in-place for a consistent dataset 
+* “Is this temperature in **C**, **F**, or **Kelvin**?”
+* “Why is pressure sometimes **Pa** and sometimes **hPa**?”
+* “How do I compute dew point / heat index from the columns I already have?”
+* “How do I standardize vendor fields into one clean schema?”
+
+…this package is for that.
 
 ---
 
-## Who this is for
+## What you get (in plain terms)
 
-This package is designed for people who:
+### 1) “Compute common comfort / moisture metrics”
 
-* work with weather-ish data (stations, forecasts, “environmental” sensors, CSVs from vendors),
-* **don’t** want to memorize meteorology,
-* want **clear, predictable behavior** in scripts and pipelines,
-* want **fast vectorized** functions (some using compiled C++ for speed). 
+Given temperature and humidity, you can compute:
 
-If you *are* a meteorologist: nothing here tries to be a complete atmospheric science library—this is intentionally a “core toolbox.”
+* **Heat index**: “feels-like hot” temperature used widely in public heat messaging (`calcHI`). 
+* **Dew point**: a more intuitive measure of “how humid it actually is” than RH (`calcTD`). 
+* **Wet-bulb temperature**: a heat + humidity metric often used in heat stress contexts (`calcWB`). 
+* **Relative humidity** from other combos (e.g., temperature + dew point, or temperature + VPD) (`calcRH`). 
+* **Wind chill** for cold conditions (`calcWindchill`). 
+
+### 2) “Make unit chaos go away”
+
+It includes a simple unit tag (`attr(x, "unit")`) plus helpers to convert values safely:
+
+* `unit()` reads/sets a `"unit"` attribute and can convert + optionally round. 
+* `convert_units()` provides a fixed set of common conversions (C/F/K, Pa/hPa, mph/m/s, etc.). 
+
+### 3) “Standardize messy incoming data to one clean schema”
+
+The function **`wx.units()`** is the workhorse for real-world feeds. It can:
+
+* rename provider columns to canonical names,
+* convert numeric values into canonical units,
+* tag harmonized columns with a `"unit"` attribute,
+* and even derive missing wind fields when enough info is present. 
+
+(Details later—this README starts simple and gradually adds depth.)
 
 ---
 
 ## Installation
 
-### From GitHub (recommended during development)
+### GitHub
 
 ```r
 install.packages("remotes")
 remotes::install_github("YOUR_GITHUB_USERNAME/weathertools")
 ```
 
-### From source (local)
+### Local source
 
 ```r
 install.packages("path/to/weathertools", repos = NULL, type = "source")
@@ -42,185 +62,100 @@ install.packages("path/to/weathertools", repos = NULL, type = "source")
 
 ---
 
-## Quick start (copy/paste)
+## 60-second start (no jargon)
 
 ```r
 library(weathertools)
 
-# 1) Heat Index (needs air temperature + relative humidity)
-ta <- c(30, 35, 40)
-attr(ta, "unit") <- "degC"
-rh <- c(50, 60, 65)
+# Example inputs
+temp_c <- c(30, 35, 40)   # air temperature in °C
+rh_pct <- c(50, 60, 65)   # relative humidity in %
 
-hi_c <- calcHI(ta, rh, outputunits = "degC")
-hi_c
-attr(hi_c, "unit")
+# Tell the vector what unit it is (optional but recommended)
+attr(temp_c, "unit") <- "degC"
 
-# 2) Dew point (temperature + RH)
-dp <- calcTD(ta, rh, outputunits = "degC")
-dp
-attr(dp, "unit")
+# "Feels-like hot" temperature
+hi <- calcHI(temp_c, rh_pct, outputunits = "degC")
 
-# 3) Wet-bulb temperature (temperature + RH)
-wb <- calcWB(ta, rh, inputunits = "degC", outputunits = "degC", ignoreattr = TRUE)
-wb
-attr(wb, "unit")
+# Dew point
+dp <- calcTD(temp_c, rh_pct, outputunits = "degC")
+
+# Wet-bulb temperature
+wb <- calcWB(temp_c, rh_pct, inputunits = "degC", outputunits = "degC", ignoreattr = TRUE)
+
+hi; dp; wb
 ```
-
-> If you’re new to these terms: the next section gives plain-English definitions and when you’d use each metric.
 
 ---
 
-## Concepts (plain English)
+## Key ideas (explained for non-weather folks)
 
 ### Temperature
 
-Just the air temperature—usually **°C** or **°F**.
+Just the number you already know. The main “gotcha” is unit confusion:
+
+* °C vs °F vs Kelvin (K)
 
 ### Relative Humidity (RH)
 
-A percentage (0–100) describing how “full” the air is with water vapor compared to the maximum possible at that temperature. RH alone can be misleading because “fullness” depends on temperature.
+A percent (0–100) that depends on temperature. RH is useful, but it can be confusing because “50%” does not mean the same amount of moisture at different temperatures.
 
-### Dew point
+### Dew point (easy mental model)
 
-The temperature the air would need to cool to (at constant pressure) for condensation to begin. Dew point is often easier to interpret than RH:
+Dew point is a single number that usually matches how “humid” it feels:
 
-* **Higher dew point = more moisture in the air**, generally.
-* People often find dew point aligns better with “mugginess.”
+* higher dew point → “muggier” air
+* lower dew point → “drier” air
 
-`calcTD()` computes dew point from temperature + RH using a fast compiled core. 
+That’s why many people prefer dew point over RH for interpretation.
 
-### Heat Index
+### Heat index
 
-A “feels-like” hot metric for shaded, light-wind conditions—primarily used in public heat guidance. It depends on temperature + RH.
-
-`calcHI()` computes Heat Index quickly (compiled core) and returns in °F or °C. 
+A “feels-like” hot temperature—commonly used in public heat guidance and sports safety messaging.
 
 ### Wet-bulb temperature
 
-A thermodynamic measure related to evaporative cooling potential. It’s often more physically grounded than heat index for certain heat-stress contexts.
-
-`calcWB()` computes wet-bulb temperature from temperature + RH and supports RH given as percent or as a fraction (e.g., 0.60). 
-
-### Pressure: station vs sea-level
-
-Weather stations at elevation measure a lower pressure than sea level. Some datasets provide “sea-level pressure” (adjusted) for comparing across elevations.
-
-* `calcPres()` estimates sea-level pressure from station pressure + temperature + elevation. 
-* `stationpressure()` estimates station pressure from sea-level pressure + elevation. 
-
-### Wind direction averaging
-
-Averaging wind direction is tricky (mean of 350° and 10° is **0°**, not 180°). `avgwdir()` does it properly via vector averaging and can weight by wind speed. 
+Another heat + humidity measure often used in heat stress contexts. If you do not need it, you can ignore it; it’s included because many applied users do.
 
 ---
 
-## Unit handling philosophy (important)
+## Unit handling (practical, not heavy)
 
-This package uses a deliberately simple “units” model:
+This package does **not** require `{units}` objects or a formal unit system. Instead:
 
-* Most functions accept **plain numeric vectors**
-* You may optionally tag vectors with `attr(x, "unit")`
-* Several functions can be **strict** about unit attributes (to prevent silent mistakes)
-* You can override strictness with `ignoreattr = TRUE` in many functions 
+* values are plain numeric vectors,
+* you can tag a column with `attr(x, "unit") <- "degC"` (recommended),
+* functions can either honor those tags or you can override behavior explicitly.
 
-### Why this approach?
+### `unit()` is the quick helper
 
-Weather data comes from everywhere (APIs, CSVs, GRIB-derived tables, vendors). Heavy unit systems are powerful, but often add friction in pipelines and `data.table` workflows. This package aims to be:
-
-* lightweight,
-* explicit,
-* hard to misuse accidentally.
-
-### `unit()` helper
-
-`unit()` is a convenience getter/setter for the `"unit"` attribute and can optionally convert between supported pairs using the package’s internal converter. 
+`unit()` reads/sets a `"unit"` attribute and can convert values when you assign a new unit. 
 
 ```r
 x <- c(0, 10, 20)
 unit(x) <- "degC"     # tag
-unit(x)              # "degC"
-unit(x) <- "degF"     # convert based on existing tag
+unit(x)              # read
+
+unit(x) <- "degF"     # convert using existing tag
+x
 unit(x)
 ```
 
-### `convert_units()` helper
+### Common conversions supported
 
-For direct unit conversions without attribute logic:
+`wx.units()` (and the internal converter it uses) supports common, practical pairs like:
 
-```r
-convert_units(c(0, 20, 30), "degC", "degF")
-convert_units(c(10, 25), "mph", "m/s")
-convert_units(c(101325, 100800), "Pa", "hPa")
-```
-
-Supported conversions include common temperature, wind speed, pressure, distance, and water-equivalent conversions. 
+* K ↔ °C, °C ↔ °F
+* Pa ↔ hPa
+* mph ↔ m/s
+* feet ↔ meters, miles ↔ km
+* and a few common precipitation/rate conversions 
 
 ---
 
-## Common recipes
+## Using with `data.table` (typical workflow)
 
-### 1) I have temperature and dew point, and I want RH (%)
-
-```r
-ta <- c(30, 31); dp <- c(20, 21)
-attr(ta, "unit") <- "degC"
-attr(dp, "unit") <- "degC"
-
-rh <- calcRH(ta, dewPoint = dp, inputunits = "degC")
-rh
-```
-
-`calcRH()` can also use vapor pressure deficit (VPD) instead of dew point if that’s what you have. 
-
----
-
-### 2) I have u and v wind components, and I want speed + direction
-
-```r
-uv2wdws(u = c(1, 0, -1), v = c(0, 1, 0))
-```
-
-Returns a 2-column matrix: wind direction (degrees) and wind speed. 
-
----
-
-### 3) I have wind direction degrees and want compass labels
-
-```r
-winddeg(c(0, 20, 45, 90, 200, 359.9))
-```
-
-Returns labels like `N`, `NNE`, `NE`, etc. 
-
----
-
-### 4) Proper rolling-average wind direction
-
-```r
-wd  <- c(350, 10, 15, 20, 25)
-wsp <- c(5,   5,  5,  5,  5)
-
-avgwdir(wd, wsp, movingWindow = 3)
-```
-
-Uses vector averaging so wrap-around is handled correctly. 
-
----
-
-### 5) Sea-level pressure from station pressure
-
-```r
-calcPres(pressureMB = 1000, airTemp = 20, elevation = 100)  # temp in degC by default
-```
-
-Temperature and elevation units are configurable. 
-
----
-
-## Working with `data.table` (recommended)
-
-Most functions are vectorized and work well inside `DT[, newcol := ...]`.
+Most functions are vectorized and work naturally in `data.table`:
 
 ```r
 library(data.table)
@@ -233,43 +168,55 @@ DT <- data.table(
 
 attr(DT$ta, "unit") <- "degC"
 
-DT[, hi := calcHI(ta, rh, outputunits = "degC")]
-DT[, dp := calcTD(ta, rh, outputunits = "degC")]
+DT[, heat_index := calcHI(ta, rh, outputunits = "degC")]
+DT[, dew_point  := calcTD(ta, rh, outputunits = "degC")]
 
 DT
 ```
 
 ---
 
-## Harmonizing messy weather feeds with `wx.units()`
+## The “big one”: cleaning and standardizing messy feeds with `wx.units()`
 
-Real-world feeds often have:
+If you are pulling data from different sources (APIs, forecast models, sensors, vendors), you often get:
 
-* different column names (`TMP_2m_K` vs `tempC` vs `T2M`)
-* different units (Kelvin vs Celsius, Pa vs hPa, mph vs m/s)
-* incomplete fields (u/v present, but speed/direction missing)
+* inconsistent column names
+* inconsistent units
+* partial wind fields
+* mixed conventions
 
-`wx.units()` is designed to standardize a dataset into a **canonical schema** by:
+`wx.units()` is designed to make that manageable.
 
-1. optionally renaming provider columns to canonical names
-2. converting numeric values to canonical units
-3. tagging harmonized columns with `attr(col, "unit")`
-4. deriving missing wind speed/direction from u/v when available 
+### What it does
 
-### Example: rename + convert + derive wind speed/direction
+It modifies your `data.table` **in place** (“by reference”) for speed and simplicity in pipelines. 
+
+It can:
+
+* apply optional renaming,
+* convert numeric values into canonical target units,
+* tag each harmonized column with `attr(, "unit")`,
+* derive missing wind fields when enough info exists, and
+* optionally run sanity checks to catch common mistakes (like values that still look like Kelvin after a conversion). 
+
+### Important: it does not “guess”
+
+By default, `wx.units()` only uses **explicit signals** (provider naming patterns, overrides, or existing unit attributes). If it cannot determine a unit, it can error (strict mode) or skip those columns (tolerant mode). 
+
+### Example: rename + harmonize units
 
 ```r
 library(data.table)
 library(weathertools)
 
 dt <- data.table(
-  TMP_2m_K            = c(298.15, 300.15),
-  DPT_2m_K            = c(293.15, 295.15),
-  UGRD_10m_ms         = c( 2.0, 3.5),
-  VGRD_10m_ms         = c(-1.0, -2.0),
-  DSWRF_surface_Wm^2  = c(500, 750),
-  PRES_surface_Pa     = c(101325, 100800),
-  TCDC_percent        = c(40, 75)
+  TMP_2m_K           = c(298.15, 300.15),
+  DPT_2m_K           = c(293.15, 295.15),
+  UGRD_10m_ms        = c( 2.0, 3.5),
+  VGRD_10m_ms        = c(-1.0, -2.0),
+  DSWRF_surface_Wm^2 = c(500, 750),
+  PRES_surface_Pa    = c(101325, 100800),
+  TCDC_percent       = c(40, 75)
 )
 
 rename_map <- c(
@@ -283,110 +230,70 @@ rename_map <- c(
 )
 
 wx.units(dt, rename_map, debug = TRUE)
-
-# After:
-# - ta/td are in degC
-# - pres is in hPa
-# - dswrf is in W/m^2
-# - wind10m + WDIR are derived from ugrd10m/vgrd10m
-# - attr(, "unit") is set on harmonized columns
 ```
 
-This function modifies the `data.table` **by reference** for speed. 
+After running, `dt` will have canonical names and units; for example:
 
-### When to use `src_override` and `target_override`
+* `ta` / `td` become °C,
+* `pres` becomes hPa,
+* `dswrf` stays W/m²,
+* and if wind speed/direction are missing but enough wind info exists, they can be derived. 
 
-* Use `src_override` when the provider naming doesn’t encode units reliably.
-* Use `target_override` when you want canonical outputs in your preferred units (e.g., store wind in mph).
+### Canonical targets (quick reference)
 
-`wx.units()` is strict about not guessing units; it can error on unknowns unless you choose tolerant mode. 
+The built-in defaults include (examples):
 
----
+* temperatures (`ta`, `td`) → °C
+* wind (`wind10m`, `ugrd10m`, `vgrd10m`) → m/s and direction in degrees
+* pressure (`pres`) → hPa
+* radiation (`dswrf`, `solar`) → W/m²
+* precipitation rate (`prate`) → mm/h and accumulation (`apcp_sfc`) → mm 
 
-## Function map (what to reach for)
-
-### Heat, humidity, comfort/stress
-
-* `calcHI()` — Heat Index (temp + RH) 
-* `calcWB()` — Wet-bulb temperature (temp + RH) 
-* `calcTD()` — Dew point (temp + RH) 
-* `calcRH()` — RH from temp + dew point **or** temp + VPD 
-* `calcWindchill()` — wind chill (°F + mph) 
-
-### Pressure
-
-* `calcPres()` — station → sea-level (approx.) 
-* `stationpressure()` — sea-level → station (approx.) 
-* `intomb()` — inHg → mb/hPa 
-
-### Wind
-
-* `uv2wdws()` — u/v → wind direction + speed 
-* `avgwdir()` — rolling average wind direction (correct wrap-around) 
-* `winddeg()` — degrees → 16-point compass label 
-* `windRun()` — wind run helper 
-
-### Units + data hygiene
-
-* `convert_units()` — direct conversion between supported pairs 
-* `unit()` — lightweight unit tagger/converter with safety policies 
-* `unitConvertRound()` — convert + round in one step 
-* `wx.units()` — rename + unit-harmonize in-place for weather feeds 
-
-### Time zone
-
-* `tzone()` — get/set POSIX time zone label, including “force reinterpretation” mode 
+You can override any of these targets with `target_override`. 
 
 ---
 
-## Common pitfalls (and how to avoid them)
+## “I don’t recognize these wind columns” (no problem)
 
-### 1) “My results are nonsense” → it’s usually units
+Many forecast/model datasets store wind as **two perpendicular components** instead of a single “speed” column. You do *not* need to understand the physics to use this package:
 
-Examples:
+* If your source provides two wind component columns, `wx.units()` can create the familiar:
 
-* Kelvin treated as Celsius (off by ~273)
-* Pa treated as hPa (off by 100×)
-* m/s treated as mph (off by ~2.237×)
+  * **wind speed** and
+  * **wind direction**
+    when those are missing. 
 
-Best practice:
-
-* Tag your columns once with `attr(x, "unit") <- "..."`, then use strict mode defaults.
-* If you must override, do it explicitly with `ignoreattr = TRUE` or `unit(x) <- "src -> dst"`.
-
-`wx.units()` also includes optional runtime checks to catch common scale mistakes early. 
-
-### 2) “Why did `wx.units()` change my data without returning anything?”
-
-Because it modifies a `data.table` by reference for speed (standard `data.table` pattern). It returns the same object invisibly for pipe-friendliness. 
-
-### 3) RH provided as 0–1 instead of 0–100
-
-`calcWB()` will auto-scale RH fractions (e.g., 0.60 → 60) when values are small. 
+If you already have wind speed and direction, you can ignore components entirely.
 
 ---
 
-## Performance notes
+## Time zones (small but useful)
 
-* Many functions are vectorized.
-* Several “core” calculations use compiled C++ for speed (especially useful for long time series or grid cells). 
-* `wx.units()` is column-wise and in-place, avoiding row loops. 
+`tzone()` is a lightweight helper to read or set the `"tzone"` attribute on POSIX date-times, with an optional “force” mode when you truly want to reinterpret clock time in a new zone. 
 
 ---
 
-## Contributing
+## Function overview (what to reach for)
 
-Issues and PRs are welcome—especially for:
+The package documentation lists the available functions, including:
 
-* additional unit conversions that are genuinely common in applied work,
-* additional canonical mappings in `wx.units()` for real-world provider names,
-* new “small but high-value” weather calculations.
+* `calcHI`, `calcRH`, `calcTD`, `calcWB`, `calcWindchill` 
+* `calcPres` (pressure-related) 
+* `avgwdir` (proper averaging of wind direction) 
+* `tzone`, `unit` and more 
 
-If you’re adding functionality, please include:
+---
 
-* clear docs (what it does, what units are expected),
-* at least one example,
-* tests if practical.
+## Common mistakes this package helps prevent
+
+1. **Kelvin vs Celsius**
+   A temperature around 300 is usually **Kelvin**, not °C. `wx.units()` includes optional checks to catch “conversion didn’t actually happen” scenarios. 
+
+2. **Pa vs hPa**
+   Pressure is often delivered as **Pa** but many workflows expect **hPa** (aka millibars). The converter supports Pa ↔ hPa. 
+
+3. **Averaging directions like normal numbers**
+   Direction wraps at 360°, so 350° and 10° are close—not opposite. Use `avgwdir`. 
 
 ---
 
@@ -395,7 +302,3 @@ If you’re adding functionality, please include:
 MIT (see `LICENSE`). 
 
 ---
-
-## Reference: package contents
-
-The package documentation PDF lists the full exported function set and their arguments, including unit-handling rules, examples, and `wx.units()` canonical schema. 
