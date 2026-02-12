@@ -115,9 +115,9 @@ considered unknown; see \code{stop_if_unknown}.
 
 The function implements a fixed set of conversions used in this project:
 \itemize{
-\item \verb{K ⇄ degC}, \verb{degC ⇄ degF}
-\item \verb{Pa ⇄ hPa}
-\item \verb{mph ⇄ m/s}, \verb{kt → m/s}
+\item \verb{K <-> degC}, \verb{degC <-> degF}
+\item \verb{Pa <-> hPa}
+\item \verb{mph <-> m/s}, \verb{kt → m/s}
 \item \verb{feet → m}, \verb{mile → km}
 \item \verb{kg/m^2/s → mm/h}, \verb{kg/m^2 → mm} (water equiv.)
 \item Identity passes (e.g., \verb{\%}, \code{deg}, \code{W/m^2}, \code{dB}, \code{1/m^2/s}, \code{m/s})

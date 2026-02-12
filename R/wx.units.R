@@ -76,9 +76,9 @@
 #'
 #' ## Conversions supported (numeric only)
 #' The function implements a fixed set of conversions used in this project:
-#' - `K ⇄ degC`, `degC ⇄ degF`
-#' - `Pa ⇄ hPa`
-#' - `mph ⇄ m/s`, `kt → m/s`
+#' - `K <-> degC`, `degC <-> degF`
+#' - `Pa <-> hPa`
+#' - `mph <-> m/s`, `kt → m/s`
 #' - `feet → m`, `mile → km`
 #' - `kg/m^2/s → mm/h`, `kg/m^2 → mm` (water equiv.)
 #' - Identity passes (e.g., `%`, `deg`, `W/m^2`, `dB`, `1/m^2/s`, `m/s`)
