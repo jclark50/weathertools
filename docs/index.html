@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>weathertools</title>
+  <meta name="description" content="weathertools — turn raw weather-like columns into clean, consistent, analysis-ready variables (no meteorology background required)." />
+
+  <style>
+    :root{
+      --bg: #0b1220;
+      --card: rgba(255,255,255,0.055);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --muted2: rgba(255,255,255,0.60);
+      --link: #7dd3fc;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 18px 55px rgba(0,0,0,0.34);
+      --radius: 18px;
+      --mono-bg: rgba(0,0,0,0.28);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body{
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+
+      /* Calm, low-distraction background */
+      background:
+        linear-gradient(180deg, rgba(11,18,32,0.93), rgba(11,18,32,0.93)),
+        radial-gradient(1000px 520px at 16% 10%, rgba(56,189,248,0.14), transparent 60%),
+        radial-gradient(900px 520px at 82% 18%, rgba(168,85,247,0.10), transparent 65%),
+        radial-gradient(1100px 760px at 52% 95%, rgba(34,197,94,0.06), transparent 60%),
+        var(--bg);
+
+      line-height: 1.45;
+    }
+
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 56px 20px;
+    }
+
+    .header{
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .title-block h1{
+      margin: 0 0 10px 0;
+      font-size: 46px;
+      letter-spacing: -0.02em;
+    }
+
+    .title-block p{
+      margin: 0;
+      color: var(--muted);
+      max-width: 82ch;
+      font-size: 16px;
+    }
+
+    .badges{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .badge{
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      border-radius: 999px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 960px){
+      .header { flex-direction: column; }
+      .badges { justify-content: flex-start; }
+      .title-block h1 { font-size: 40px; }
+    }
+
+    .grid{
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 960px){
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--card), rgba(255,255,255,0.03));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 18px;
+    }
+
+    .card h2{
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .card p{
+      margin: 0 0 10px 0;
+      color: var(--muted);
+      font-size: 14.75px;
+    }
+
+    .actions{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 540px){
+      .actions { grid-template-columns: 1fr; }
+    }
+
+    .btn{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.07);
+      color: var(--text);
+      font-weight: 650;
+      font-size: 14px;
+      text-decoration: none;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .btn:hover{
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(125,211,252,0.20), rgba(168,85,247,0.14));
+      border-color: rgba(125,211,252,0.24);
+    }
+
+    .btn.primary:hover{
+      background: linear-gradient(135deg, rgba(125,211,252,0.24), rgba(168,85,247,0.17));
+    }
+
+    .sep{
+      height: 1px;
+      background: rgba(255,255,255,0.10);
+      margin: 14px 0;
+    }
+
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12.75px;
+      color: rgba(255,255,255,0.88);
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: var(--mono-bg);
+      border: 1px solid rgba(255,255,255,0.10);
+      overflow-x: auto;
+      margin: 10px 0 0 0;
+      white-space: pre;
+      line-height: 1.35;
+    }
+
+    .inline-code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12.5px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.88);
+      white-space: nowrap;
+    }
+
+    .mini-grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 720px){
+      .mini-grid{ grid-template-columns: 1fr; }
+    }
+
+    .tile{
+      padding: 12px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+    }
+
+    .tile .k{
+      font-size: 12px;
+      color: rgba(255,255,255,0.66);
+      margin-bottom: 4px;
+    }
+
+    .tile .v{
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 650;
+    }
+
+    .bullets{
+      margin: 10px 0 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    .bullets li{ margin: 6px 0; }
+
+    .note{
+      color: rgba(255,255,255,0.62);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .tiny{
+      font-size: 12px;
+      color: rgba(255,255,255,0.56);
+    }
+
+    .footer{
+      margin-top: 18px;
+      color: rgba(255,255,255,0.55);
+      font-size: 12.5px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hr{
+      height: 1px;
+      background: rgba(255,255,255,0.10);
+      margin: 14px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="title-block">
+        <h1>weathertools</h1>
+        <p>
+          Turn raw “weather-like” columns (temperature, humidity, wind, pressure, time) into
+          <strong>clean, consistent, analysis-ready variables</strong> — without needing a meteorology background.
+        </p>
+      </div>
+
+      <div class="badges" aria-label="quick tags">
+        <span class="badge">Heat index</span>
+        <span class="badge">Dew point</span>
+        <span class="badge">Wet-bulb</span>
+        <span class="badge">Units + harmonization</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: START + EXAMPLES -->
+      <div class="card">
+        <h2>Start here</h2>
+        <p>
+          Most users only need one of these: the PDF manual, the GitHub repo, or the install command.
+          The PDF is the CRAN-style reference (full function documentation).
+        </p>
+
+        <div class="actions">
+          <!-- Put the PDF in /docs and link to it (relative link works on Pages) -->
+          <a class="btn primary" href="weathertools_1.0.0.pdf">Package manual (PDF)</a>
+          <a class="btn" href="https://github.com/jclark50/weathertools">View repository</a>
+        </div>
+
+        <div class="sep"></div>
+
+        <h2>Install</h2>
+        <p>Install the current version directly from GitHub:</p>
+        <div class="mono">remotes::install_github("jclark50/weathertools")</div>
+
+        <div class="sep"></div>
+
+        <h2>Quick examples (copy/paste)</h2>
+        <p>
+          These are the common “I have columns, I need a useful metric” cases.
+          No special classes required — plain numeric vectors work.
+        </p>
+
+        <p class="tiny">Example 1 — “Feels-like hot” (Heat Index) + “mugginess” (Dew Point)</p>
+        <div class="mono">library(weathertools)
+
+ta  <- c(30, 35, 40)   # air temperature
+rh  <- c(50, 60, 65)   # relative humidity (%)
+
+attr(ta, "unit") <- "degC"  # optional but recommended
+
+hi <- calcHI(ta, rh, outputunits = "degC")
+dp <- calcTD(ta, rh, outputunits = "degC")
+
+hi
+dp</div>
+
+        <p class="tiny" style="margin-top:12px;">Example 2 — Wet-bulb temperature (heat + humidity stress metric)</p>
+        <div class="mono">library(weathertools)
+
+ta <- 90;  attr(ta, "unit") <- "degF"
+rh <- 70
+
+wb_f <- calcWB(ta, rh)                 # defaults to degF output
+wb_c <- calcWB(ta, rh, outputunits="degC")
+
+wb_f
+wb_c</div>
+
+        <p class="tiny" style="margin-top:12px;">Example 3 — Fix unit chaos across sources (fast vector conversion)</p>
+        <div class="mono">library(weathertools)
+
+convert_units(c(300, 305), from = "K",  to = "degC")   # temperature
+convert_units(c(101325, 100800), "Pa",  "hPa")         # pressure
+convert_units(c(10, 20), "m/s", "mph")                 # wind speed</div>
+
+        <p class="tiny" style="margin-top:12px;">Example 4 — Wind direction averaging (avoids the 0/360 wraparound mistake)</p>
+        <div class="mono">library(weathertools)
+
+wd  <- c(350, 10, 15, 20, 25)  # degrees
+wsp <- c(5,   5,  5,  5,  5)   # speed (same length)
+
+avgwdir(wd, wsp, movingWindow = 3)</div>
+
+        <div class="note">
+          Want the complete list of functions (with arguments)? Use the PDF manual.
+          The manual includes the package overview and function index. <!-- manual index in PDF -->
+        </div>
+      </div>
+
+      <!-- RIGHT: WHAT'S INSIDE + LINKS + HARMONIZER -->
+      <div class="card">
+        <h2>What’s inside</h2>
+        <p>
+          <strong>weathertools</strong> includes fast utilities for common weather calculations and a lightweight unit
+          system that plays nicely with normal R workflows.
+        </p>
+
+        <div class="mini-grid">
+          <div class="tile">
+            <div class="k">Comfort / stress metrics</div>
+            <div class="v">Heat Index, Wet-bulb, Wind chill</div>
+          </div>
+          <div class="tile">
+            <div class="k">Humidity helpers</div>
+            <div class="v">Dew point, Relative Humidity</div>
+          </div>
+          <div class="tile">
+            <div class="k">Wind tools</div>
+            <div class="v">Direction averaging + conversions</div>
+          </div>
+          <div class="tile">
+            <div class="k">Units + cleaning</div>
+            <div class="v">Tag, convert, harmonize whole tables</div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <h2>When to use what</h2>
+        <ul class="bullets">
+          <li><span class="inline-code">calcHI()</span> — “feels-like hot” for warm + humid conditions</li>
+          <li><span class="inline-code">calcTD()</span> — dew point (often easier to interpret than RH)</li>
+          <li><span class="inline-code">calcWB()</span> — wet-bulb temperature (heat + humidity stress context)</li>
+          <li><span class="inline-code">avgwdir()</span> — average wind direction correctly (handles 360/0)</li>
+          <li><span class="inline-code">unit()</span> / <span class="inline-code">convert_units()</span> — lightweight unit tagging + conversion</li>
+          <li><span class="inline-code">wx.units()</span> — “janitor” for renaming + unit cleanup in real-world feeds</li>
+        </ul>
+
+        <div class="sep"></div>
+
+        <h2>Dataset “janitor”: wx.units()</h2>
+        <p>
+          If you ingest weather from multiple sources, you’ll run into inconsistent column names and units.
+          <span class="inline-code">wx.units()</span> standardizes a <span class="inline-code">data.table</span> in-place:
+          it can rename provider columns to your canonical names, convert units, tag unit attributes, and in some cases
+          derive friendly wind fields from component columns. :contentReference[oaicite:0]{index=0}
+        </p>
+
+        <p class="tiny">Minimal example — rename + convert + tag units</p>
+        <div class="mono">library(data.table)
+library(weathertools)
+
+dt <- data.table(
+  TMP_2m_K    = c(298.15, 300.15),
+  PRES_sfc_Pa = c(101325, 100800)
+)
+
+rename_map <- c(
+  "TMP_2m_K"    = "ta",
+  "PRES_sfc_Pa" = "pres"
+)
+
+wx.units(dt, rename_map = rename_map, debug = TRUE)
+
+# dt now has:
+# - ta in degC
+# - pres in hPa
+# - attr(dt$ta, "unit") and attr(dt$pres, "unit") set</div>
+
+        <div class="sep"></div>
+
+        <h2>Direct links</h2>
+        <p class="tiny">
+          Once Pages is enabled, the “clean” manual link is typically:
+        </p>
+        <div class="mono">https://jclark50.github.io/weathertools/weathertools_1.0.0.pdf</div>
+
+        <div class="footer">
+          <div>© <span id="yr"></span> weathertools</div>
+          <div><a href="https://github.com/jclark50/weathertools/issues">Report an issue</a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="tiny">
+      The package manual (PDF) includes the full function index and details on unit handling, including how
+      <span class="inline-code">attr(x,"unit")</span> is used and how strict/override modes work. :contentReference[oaicite:1]{index=1}
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("yr").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
