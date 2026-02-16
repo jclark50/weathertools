@@ -1,10 +1,2 @@
-#PKG_CPPFLAGS += $(shell "${R_HOME}/bin/Rscript" -e "RcppParallel::CxxFlags()")
-##
-# Link directly to the shared object file shipped in the RcppParallel package
-#PKG_LIBS     += $(shell "${R_HOME}/bin/Rscript" -e "cat(file.path(system.file('libs', package='RcppParallel'), 'RcppParallel.so'))")
-##
-# Keep this too (it may be empty on your system, but harmless)
-#PKG_LIBS     += $(shell "${R_HOME}/bin/Rscript" -e "RcppParallel::RcppParallelLibs()")
-PKG_CPPFLAGS += $(shell "$(R_HOME)/bin/Rscript" -e "RcppParallel::CxxFlags()")
-
-PKG_LIBS += $(shell "$(R_HOME)/bin/Rscript" -e "x <- RcppParallel::RcppParallelLibs(); x <- gsub(' -ltbbmalloc', '', x, fixed=TRUE); x <- gsub(' -ltbb', '', x, fixed=TRUE); cat(x)")
+PKG_CPPFLAGS += -I/usr/include -DTBB_INTERFACE_NEW
+PKG_LIBS += -lRcppParallel -ltbb -ltbbmalloc
