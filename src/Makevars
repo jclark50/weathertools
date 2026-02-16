@@ -1,6 +1,7 @@
-## src/Makevars
-
 CXX_STD = CXX11
 
-PKG_CPPFLAGS += $(shell "${R_HOME}/bin/Rscript" -e 'RcppParallel::CxxFlags()')
-PKG_LIBS     += $(shell "${R_HOME}/bin/Rscript" -e 'RcppParallel::RcppParallelLibs()')
+PKG_CPPFLAGS += $(shell "${R_HOME}/bin/Rscript" -e "RcppParallel::CxxFlags()")
+
+# Link directly to the actual shared object shipped with RcppParallel
+PKG_LIBS += $(shell "${R_HOME}/bin/Rscript" -e "cat(file.path(system.file('libs', package='RcppParallel'), 'RcppParallel.so'))")
+PKG_LIBS += $(shell "${R_HOME}/bin/Rscript" -e "RcppParallel::LdFlags()")
