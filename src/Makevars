@@ -1,3 +1,2 @@
-PKG_CPPFLAGS += $(shell "$(R_HOME)/bin/Rscript" -e "RcppParallel::CxxFlags()")
-
-PKG_LIBS += $(shell "$(R_HOME)/bin/Rscript" -e "x <- RcppParallel::RcppParallelLibs(); x <- gsub(' -ltbbmalloc', '', x, fixed=TRUE); x <- gsub(' -ltbb', '', x, fixed=TRUE); cat(x)")
+PKG_CPPFLAGS += $(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript" -e "RcppParallel::CxxFlags()")
+PKG_LIBS     += $(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript" -e "RcppParallel::RcppParallelLibs()")
