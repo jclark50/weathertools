@@ -1,3 +1,2 @@
 PKG_CPPFLAGS += $(shell "$(R_HOME)/bin/Rscript" -e "RcppParallel::CxxFlags()")
-
-PKG_LIBS += $(shell "$(R_HOME)/bin/Rscript" -e "cat(' -L', shQuote(system.file('libs', package='RcppParallel')), ' -lRcppParallel', ' ', RcppParallel::RcppParallelLibs(), sep='')")
+PKG_LIBS     += $(shell "$(R_HOME)/bin/Rscript" -e "RcppParallel::RcppParallelLibs()")
