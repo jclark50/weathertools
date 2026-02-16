@@ -54,6 +54,7 @@
 #'   attr(DT$dp, "unit")
 #' }
 #'
+#'
 #' @seealso \code{\link{unit}} for lightweight unit tagging.
 #' @export
 calcDewpoint <- function(airTemp, relativeHumidity,
