@@ -1,2 +1,6 @@
-PKG_CPPFLAGS += -I/usr/include -DTBB_INTERFACE_NEW
-PKG_LIBS += -lRcppParallel -ltbb -ltbbmalloc
+## src/Makevars
+
+CXX_STD = CXX11
+
+PKG_CPPFLAGS += $(shell "${R_HOME}/bin/Rscript" -e 'RcppParallel::CxxFlags()')
+PKG_LIBS     += $(shell "${R_HOME}/bin/Rscript" -e 'RcppParallel::RcppParallelLibs()')
