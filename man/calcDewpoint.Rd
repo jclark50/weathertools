@@ -81,6 +81,7 @@ if (requireNamespace("data.table", quietly = TRUE)) {
   attr(DT$dp, "unit")
 }
 
+
 }
 \seealso{
 \code{\link{unit}} for lightweight unit tagging.
